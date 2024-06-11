@@ -265,6 +265,9 @@ def run_model(X, y, feature_arrays):
     print("(n_features, n_voxels) =", average_coef.shape)
     del coef_per_delay
 
+    assert average_coef.shape[0] == X.shape[1]*4
+    assert average_coef.shape[1] == y.shape[1]
+
     print("Finished vision encoding model")
     return average_coef
 
