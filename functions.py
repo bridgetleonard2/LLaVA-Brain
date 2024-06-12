@@ -306,8 +306,8 @@ def get_test_data(layer, modality):
 
         layer_selected.remove()
 
-        # Save data
-        data = np.array(data[f"layer_{layer}"])
-        print("Got face features")
+    # Save data
+    data = np.array(data[f"layer_{layer}"])
+    print("Got face features")
 
-        return data
+    return data
