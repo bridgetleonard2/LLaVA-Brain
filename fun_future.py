@@ -18,6 +18,9 @@ from sklearn import set_config
 
 # Model
 from transformers import BridgeTowerModel, BridgeTowerProcessor
+from transformers import AutoProcessor
+from transformers import LlavaForConditionalGeneration as llava
+from transformers import BitsAndBytesConfig
 
 # Specialized functions
 import utils
@@ -31,20 +34,35 @@ def setup_model(model_name, layer, layer_name):
 
     Parameters
     ----------
-    layer: int
-        A layer reference for the BridgeTower model. Set's the forward
-        hook on the relevant layer
+    model_name : str
+        The name of the model to be set up.
+        Currently supports 'BridgeTower' and 'llava'.
+    layer : int
+        A layer reference for the model.
+        Sets the forward hook on the relevant layer.
+    layer_name : str
+        The name of the layer for which the forward hook is set.
 
     Returns
     -------
-    device : cuda or cpu for gpu acceleration if accessible.
-    model: BridgeTower model.
-    processor: BridgeTower processor.
-    features: Dictionary
-        A placeholder for batch features, one for each forward
-        hook.
-    layer_selected: Relevant layer chosen for forward hook.
-    """
+    device : str
+        The device used for model computation. Can be 'cuda' or 'cpu'.
+    model : torch.nn.Module
+        The initialized model.
+    processor : transformers.PreTrainedProcessor
+        The initialized processor.
+    features : dict
+        A dictionary to store the output features of the forward hook.
+    layer_selected : torch.utils.hooks.RemovableHandle
+        The handle for the registered forward hook.
+
+    Notes
+    -----
+    This function sets up a transformers model with layer hooks. It
+    initializes the model and processor based on the
+    provided model name. It also registers a forward hook on the specified
+    layer and stores the output features in the
+    `features` dictionary."""
     # Define Model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -89,227 +107,142 @@ def setup_model(model_name, layer, layer_name):
     elif model_name == 'llava':
         # Add in layers later
         quantization_config = BitsAndBytesConfig(load_in_4bit=True,
-                                             bnb_4bit_compute_dtype=torch.float16)
-
+                                                 bnb_4bit_compute_dtype=torch.float16)
         model_id = "llava-hf/llava-1.5-7b-hf"
 
         processor = AutoProcessor.from_pretrained(model_id)
-        model = LlavaForConditionalGeneration.from_pretrained(model_id, quantization_config=quantization_config, device_map="auto")
-
-        layer_selected = model.multi_modal_projector.linear_2.register_forward_hook(get_features(layer_name))
+        model = llava.from_pretrained(model_id,
+                                      quantization_config=quantization_config,
+                                      device_map="auto")
+        layer = model.multi_modal_projector.linear_2
+        layer_selected = layer.register_forward_hook(get_features(layer_name))
 
     return device, model, processor, features, layer_selected
 
 
-# Main functions
-def get_movie_features(movie, subject, layer, layer_name, n=30):
-    """Function to average feature vectors over every n inputs.
+def process_model_input(model, processor, input_data, device):
+    model_input = processor(*input_data, return_tensors="pt")
+    model_input = {key: value.to(device) for key, value in model_input.items()}
+    _ = model(**model_input)
+    return model_input
 
-    Parameters
-    ----------
-    movie_data: Array
-        An array of shape (n_images, 512, 512). Represents frames from
-        a color movie.
-    n (optional): int
-        Number of frames to average over. Set at 30 to mimick an MRI
-        TR = 2 with a 15 fps movie.
 
-    Returns
-    -------
-    data : Dictionary
-        Dictionary where keys are the model layer from which activations are
-        extracted. Values are lists representing activations of 768 dimensions
-        over the course of n_images / 30.
-    """
+def average_tensors(tensors):
+    first_size = tensors[0].size()
+    if all(tensor.size() == first_size for tensor in tensors):
+        avg_feature = torch.mean(torch.stack(tensors), dim=0)
+    else:
+        padded_tensors = pad_tensors_to_max(tensors)
+        avg_feature = torch.mean(torch.stack(padded_tensors), dim=0)
+    return avg_feature.detach().cpu().numpy()
+
+
+def pad_tensors_to_max(tensors):
+    max_size = [max(tensor.size(dim) for tensor in tensors) for dim in
+                range(tensors[0].dim())]
+    padded_tensors = []
+    for tensor in tensors:
+        pad_list = [max_size[dim] - tensor.size(dim) for dim in
+                    range(tensor.dim())]
+        pad_list = [item for sublist in zip(pad_list, [0] * len(pad_list)) for
+                    item in sublist]
+        padded_tensor = torch.nn.functional.pad(tensor, pad_list)
+        padded_tensors.append(padded_tensor)
+    return padded_tensors
+
+
+# Movie Features
+def get_movie_features(model_name, movie, subject, layer, layer_name, n=30):
     try:
-        data = np.load(f"results/features/movie/{subject}/{layer_name}" +
-                       f"_{movie}.npy")
-        print("Loaded movie features")
+        return np.load(f"results/features/movie/{subject}/" +
+                       f"{layer_name}_{movie}.npy")
     except FileNotFoundError:
-        data_path = 'data/raw_stimuli/shortclips/stimuli/'
+        pass
 
-        print("loading HDF array")
-        movie_data = utils.load_hdf5_array(f"{data_path}{movie}.hdf",
-                                           key='stimuli')
-
-        # Define Model
-        device, model, processor, features, layer_selected = setup_model(layer)
-
-        # create overall data structure for average feature vectors
-        # a dictionary with layer names as keys and a
-        # list of vectors as it values
-        data = {}
-
-        # a dictionary to store vectors for n consecutive trials
-        avg_data = {}
-
-        print("Running movie through model")
-        # loop through all inputs
-        for i, image in tqdm(enumerate(movie_data)):
-
-            model_input = processor(image, "", return_tensors="pt")
-            # Assuming model_input is a dictionary of tensors
-            model_input = {key: value.to(device) for key,
-                           value in model_input.items()}
-
-            _ = model(**model_input)
-
-            for name, tensor in features.items():
-                if name not in avg_data:
-                    avg_data[name] = []
-                avg_data[name].append(tensor)
-
-            # check if average should be stored
-            if (i + 1) % n == 0:
-                for name, tensors in avg_data.items():
-                    first_size = tensors[0].size()
-
-                    if all(tensor.size() == first_size for tensor in tensors):
-                        avg_feature = torch.mean(torch.stack(tensors), dim=0)
-                        avg_feature_numpy = avg_feature.detach().cpu().numpy()
-                        # print(len(avg_feature_numpy))
-                    else:
-                        # Find problem dimension
-                        for dim in range(tensors[0].dim()):
-                            first_dim = tensors[0].size(dim)
-
-                            if not all(tensor.size(dim) == first_dim
-                                       for tensor in tensors):
-                                # Specify place to pad
-                                p_dim = (tensors[0].dim()*2) - (dim + 2)
-                                # print(p_dim)
-                                max_size = max(tensor.size(dim)
-                                               for tensor in tensors)
-                                padded_tensors = []
-
-                                for tensor in tensors:
-                                    # Make a list with length of 2*dimensions
-                                    # - 1 to insert pad later
-                                    pad_list = [0] * ((2*tensor[0].dim()) - 1)
-                                    pad_list.insert(
-                                        p_dim, max_size - tensor.size(dim))
-                                    # print(tuple(pad_list))
-                                    padded_tensor = pad(tensor,
-                                                        tuple(pad_list))
-                                    padded_tensors.append(padded_tensor)
-
-                        avg_feature = torch.mean(torch.stack(padded_tensors),
-                                                 dim=0)
-                        avg_feature_numpy = avg_feature.detach().cpu().numpy()
-                        # print(len(avg_feature_numpy))
-
-                    if name not in data:
-                        data[name] = []
-                    data[name].append(avg_feature_numpy)
-
-                avg_data = {}
-
-        layer_selected.remove()
-
-        # Save data
-        data = np.array(data[layer_name])
-        print("Got movie features")
-
-        # Data should be 2d of shape (n_images/n, num_features)
-        # if data is above 2d, average 2nd+ dimensions
-        if data.ndim > 2:
-            data = np.mean(data, axis=1)
-
-        np.save(f"results/features/movie/{subject}/{layer_name}_{movie}.npy",
-                data)
-
-    return data
+    movie_data = load_movie_data(movie)
+    device, model, processor, features, layer_selected = setup_model(model_name, layer, layer_name)
+    data = process_movie(movie_data, model, processor, features, n, device)
+    layer_selected.remove()
+    np.save(data, f"results/features/movie/{subject}/" +
+                  f"{layer_name}_{movie}.npy")
+    return data[layer_name]
 
 
-def get_story_features(story, subject, layer, layer_name, n=20):
-    """Function to extract feature vectors for each word of a story.
+def load_movie_data(movie):
+    data_path = 'data/raw_stimuli/shortclips/stimuli/'
+    print("Loading HDF array")
+    return utils.load_hdf5_array(f"{data_path}{movie}.hdf", key='stimuli')
 
-    Parameters
-    ----------
-    story_data: Array
-        An array containing each word of the story in order.
-    n (optional): int
-        Number of words to to pad the target word with for
-        context (before and after).
 
-    Returns
-    -------
-    data : Dictionary
-        Dictionary where keys are the model layer from which activations are
-        extracted. Values are lists representing activations of 768 dimensions
-        over the course of each word in the story.
-    """
-    try:
-        data = np.load(f"results/features/story/{subject}/" +
-                       f"{layer_name}_{story}.npy")
-        print("Loaded story features")
-    except FileNotFoundError:
-        data_path = 'data/raw_stimuli/textgrids/stimuli/'
-        print("loading textgrid")
-
-        story_data = utils.textgrid_to_array(f"{data_path}{story}.TextGrid")
-
-        # Define Model
-        device, model, processor, features, layer_selected = setup_model(layer)
-
-        # Create a numpy array filled with gray values (128 in this case)
-        # THis will act as tthe zero image input***
-        gray_value = 128
-        image_array = np.full((512, 512, 3), gray_value, dtype=np.uint8)
-
-        # create overall data structure for average feature vectors
-        # a dictionary with layer names as keys and a list of vectors
-        # as it values
-        data = {}
-
-        print("Running story through model")
-        # loop through all inputs
-        for i, word in tqdm(enumerate(story_data)):
-            # if one of first 20 words, just pad with all the words before it
-            if i < n:
-                # collapse list of strings into a single one
-                word_with_context = ' '.join(story_data[:(i+n)])
-            # if one of last 20 words, just pad with all the words after it
-            elif i > (len(story_data) - n):
-                # collapse list of strings into a single one
-                word_with_context = ' '.join(story_data[(i-n):])
-                # collapse list of strings into a single one
-            else:
-                word_with_context = ' '.join(story_data[(i-n):(i+n)])
-
-            model_input = processor(image_array, word_with_context,
-                                    return_tensors="pt")
-            # Assuming model_input is a dictionary of tensors
-            model_input = {key: value.to(device) for key,
-                           value in model_input.items()}
-
-            _ = model(**model_input)
-
-            for name, tensor in features.items():
+def process_movie(movie_data, model, processor, features, n, device):
+    data = {}
+    avg_data = {}
+    print("Running movie through model")
+    for i, image in tqdm(enumerate(movie_data)):
+        _ = process_model_input(model, processor, (image, ""), device)
+        for name, tensor in features.items():
+            if name not in avg_data:
+                avg_data[name] = []
+            avg_data[name].append(tensor)
+        if (i + 1) % n == 0:
+            for name, tensors in avg_data.items():
+                avg_feature_numpy = average_tensors(tensors)
                 if name not in data:
                     data[name] = []
-                numpy_tensor = tensor.detach().cpu().numpy()
-
-                data[name].append(numpy_tensor)
-
-        layer_selected.remove()
-
-        # Save data
-        data = np.array(data[layer_name])
-        print("Got story features")
-
-        # Data should be 2d of shape (n_images/n, num_features)
-        # if data is above 2d, average 2nd+ dimensions
-        if data.ndim > 2:
-            data = np.mean(data, axis=1)
-
-        np.save(f"results/features/story/{subject}/{layer_name}_{story}.npy",
-                data)
-
+                data[name].append(avg_feature_numpy)
+            avg_data = {}
     return data
 
 
-def alignment(layer, layer_name):
+# Story Features
+def get_story_features(model_name, story, subject, layer, layer_name, n=20):
+    try:
+        return np.load(f"results/features/story/{subject}/" +
+                             f"{layer_name}_{story}.npy")
+    except FileNotFoundError:
+        pass
+
+    story_data = load_story_data(story)
+    device, model, processor, features, layer_selected = setup_model(model_name, layer, layer_name)
+    data = process_story(story_data, model, processor, features, n, device)
+    layer_selected.remove()
+    np.save(data, f"results/features/story/{subject}/" +
+                  "{layer_name}_{story}.npy")
+    return data[layer_name]
+
+
+def load_story_data(story):
+    data_path = 'data/raw_stimuli/textgrids/stimuli/'
+    print("Loading TextGrid")
+    return utils.textgrid_to_array(f"{data_path}{story}.TextGrid")
+
+
+def process_story(story_data, model, processor, features, n, device):
+    data = {}
+    gray_value = 128
+    image_array = np.full((512, 512, 3), gray_value, dtype=np.uint8)
+    print("Running story through model")
+    for i, word in tqdm(enumerate(story_data)):
+        word_with_context = get_word_with_context(story_data, i, n)
+        _ = process_model_input(model, processor, (image_array,
+                                                   word_with_context), device)
+        for name, tensor in features.items():
+            if name not in data:
+                data[name] = []
+            data[name].append(tensor.detach().cpu().numpy())
+    return data
+
+
+def get_word_with_context(story_data, i, n):
+    if i < n:
+        return ' '.join(story_data[:(i+n)])
+    elif i > (len(story_data) - n):
+        return ' '.join(story_data[(i-n):])
+    else:
+        return ' '.join(story_data[(i-n):(i+n)])
+
+
+def alignment(model_name, layer, layer_name):
     """Function generate matrices for feature alignment. Capture the
     linear relationship between caption features and image features
     output by a specific layer of the BridgeTower model.
@@ -343,7 +276,7 @@ def alignment(layer, layer_name):
                                     streaming=True)
 
         # Define Model
-        device, model, processor, features, _ = setup_model(layer)
+        device, model, processor, features, _ = setup_model(model_name, layer, layer_name)
 
         data = []
 
@@ -424,7 +357,7 @@ def alignment(layer, layer_name):
     return coef_images_to_captions, coef_captions_to_images
 
 
-def crossmodal_vision_model(subject, layer):
+def crossmodal_vision_model(model_name, subject, layer):
     """Function to build the vision encoding model. Creates a
     matrix mapping the linear relationship between BridgeTower features
     and brain voxel activity.
@@ -447,19 +380,19 @@ def crossmodal_vision_model(subject, layer):
     print("Extracting features from data")
 
     # Extract features from raw stimuli
-    train00 = get_movie_features('train_00', subject, layer)
-    train01 = get_movie_features('train_01', subject, layer)
-    train02 = get_movie_features('train_02', subject, layer)
-    train03 = get_movie_features('train_03', subject, layer)
-    train04 = get_movie_features('train_04', subject, layer)
-    train05 = get_movie_features('train_05', subject, layer)
-    train06 = get_movie_features('train_06', subject, layer)
-    train07 = get_movie_features('train_07', subject, layer)
-    train08 = get_movie_features('train_08', subject, layer)
-    train09 = get_movie_features('train_09', subject, layer)
-    train10 = get_movie_features('train_10', subject, layer)
-    train11 = get_movie_features('train_11', subject, layer)
-    test = get_movie_features('test', subject, layer)
+    train00 = get_movie_features(model_name, 'train_00', subject, layer)
+    train01 = get_movie_features(model_name, 'train_01', subject, layer)
+    train02 = get_movie_features(model_name, 'train_02', subject, layer)
+    train03 = get_movie_features(model_name, 'train_03', subject, layer)
+    train04 = get_movie_features(model_name, 'train_04', subject, layer)
+    train05 = get_movie_features(model_name, 'train_05', subject, layer)
+    train06 = get_movie_features(model_name, 'train_06', subject, layer)
+    train07 = get_movie_features(model_name, 'train_07', subject, layer)
+    train08 = get_movie_features(model_name, 'train_08', subject, layer)
+    train09 = get_movie_features(model_name, 'train_09', subject, layer)
+    train10 = get_movie_features(model_name, 'train_10', subject, layer)
+    train11 = get_movie_features(model_name, 'train_11', subject, layer)
+    test = get_movie_features(model_name, 'test', subject, layer)
 
     # Build encoding model
     print("Loading movie fMRI data")
@@ -545,7 +478,7 @@ def crossmodal_vision_model(subject, layer):
     return average_coef
 
 
-def crossmodal_language_model(subject, layer):
+def crossmodal_language_model(model_name, subject, layer, layer_name):
     """Function to build the language encoding model. Creates a
     matrix mapping the linear relationship between BridgeTower features
     and brain voxel activity.
@@ -568,19 +501,19 @@ def crossmodal_language_model(subject, layer):
     print("Extracting features from data")
 
     # Extract features from raw stimuli
-    alternateithicatom = get_story_features('alternateithicatom', subject,
-                                            layer)
-    avatar = get_story_features('avatar', subject, layer)
-    howtodraw = get_story_features('howtodraw', subject, layer)
-    legacy = get_story_features('legacy', subject, layer)
-    life = get_story_features('life', subject, layer)
-    yankees = get_story_features('myfirstdaywiththeyankees', subject,
-                                 layer)
-    naked = get_story_features('naked', subject, layer)
-    ode = get_story_features('odetostepfather', subject, layer)
-    souls = get_story_features('souls', subject, layer)
-    undertheinfluence = get_story_features('undertheinfluence',
-                                           subject, layer)
+    alternateithicatom = get_story_features(model_name, 'alternateithicatom', subject,
+                                            layer, layer_name)
+    avatar = get_story_features(model_name, 'avatar', subject, layer, layer_name)
+    howtodraw = get_story_features(model_name, 'howtodraw', subject, layer, layer_name)
+    legacy = get_story_features(model_name, 'legacy', subject, layer, layer_name)
+    life = get_story_features(model_name, 'life', subject, layer, layer_name)
+    yankees = get_story_features(model_name, 'myfirstdaywiththeyankees', subject,
+                                 layer, layer_name)
+    naked = get_story_features(model_name, 'naked', subject, layer, layer_name)
+    ode = get_story_features(model_name, 'odetostepfather', subject, layer, layer_name)
+    souls = get_story_features(model_name, 'souls', subject, layer, layer_name)
+    undertheinfluence = get_story_features(model_name, 'undertheinfluence',
+                                           subject, layer, layer_name)
 
     # Build encoding model
     print('Load story fMRI data')
@@ -688,7 +621,7 @@ def crossmodal_language_model(subject, layer):
     return average_coef
 
 
-def story_prediction(subject, layer, vision_encoding_matrix):
+def story_prediction(model_name, subject, layer, layer_name, vision_encoding_matrix):
     """Function to run the vision encoding model. Predicts brain activity
     to story listening and return correlations between predictions and real
     brain activity.
@@ -710,7 +643,7 @@ def story_prediction(subject, layer, vision_encoding_matrix):
         Array of shape (num_voxels) representing the correlation between
         predictions and real brain activity for each voxel.
     """
-    _, coef_captions_to_images = alignment(layer)
+    _, coef_captions_to_images = alignment(model_name, layer, layer_name)
 
     # Get story features
     alternateithicatom = get_story_features('alternateithicatom', subject,

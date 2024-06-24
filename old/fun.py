@@ -1,7 +1,8 @@
 import numpy as np
 import h5py
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted, check_array, check_random_state
+from sklearn.utils.validation import check_is_fitted, check_array, \
+    check_random_state
 
 
 def load_hdf5_array(file_name, key=None, slice=slice(0, None)):
@@ -30,6 +31,7 @@ def load_hdf5_array(file_name, key=None, slice=slice(0, None)):
             return data
         else:
             return hf[key][slice]
+
 
 def generate_leave_one_run_out(n_samples, run_onsets, random_state=None,
                                n_runs_out=1):
@@ -76,6 +78,7 @@ def generate_leave_one_run_out(n_samples, run_onsets, random_state=None,
             [runs[jj] for jj in range(n_runs) if jj not in val_runs])
         val = np.hstack([runs[jj] for jj in range(n_runs) if jj in val_runs])
         yield train, val
+
 
 class Delayer(BaseEstimator, TransformerMixin):
     """Scikit-learn Transformer to add delays to features.
