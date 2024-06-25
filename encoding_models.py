@@ -1,10 +1,10 @@
 import fun
 import numpy as np
-
+import torch
 
 class EncodingModel:
     def __init__(self, model, subject, layer):
-        self.model = "llava"
+        self.model_name = "llava"
         self.subject = subject
         self.layer = layer
         self.encoding_model = None
@@ -13,7 +13,16 @@ class EncodingModel:
             self.layer_name = layer
         else:
             self.layer_name = f"layer_{layer}"
-
+    
+    def setup_model(self):
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        if self.model_name == "llava":
+            self.model, self.processor, self.features, self.layer_selected = fun.setup_llava(self.device,
+                                                                                             self.layer)
+        else:
+            self.model, self.processor, self.features, self.layer_selected = fun.setup_bridgetower(self.device,
+                                                                                             self.layer)
+    
     def crossmodal_vision_model(self):
         print("Building vision model")
         self.encoding_model = fun.crossmodal_vision_model(self.model,

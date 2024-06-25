@@ -29,14 +29,11 @@ import utils
 from tqdm import tqdm
 
 
-def setup_model(model_name, layer, layer_name):
+def setup_bridgetower(device, layer):
     """Function to setup transformers model with layer hooks.
 
     Parameters
     ----------
-    model_name : str
-        The name of the model to be set up.
-        Currently supports 'BridgeTower' and 'llava'.
     layer : int
         A layer reference for the model.
         Sets the forward hook on the relevant layer.
@@ -63,9 +60,6 @@ def setup_model(model_name, layer, layer_name):
     provided model name. It also registers a forward hook on the specified
     layer and stores the output features in the
     `features` dictionary."""
-    # Define Model
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
     # placeholder for batch features
     features = {}
 
@@ -76,48 +70,89 @@ def setup_model(model_name, layer, layer_name):
             features[name] = last_output  # detached_outputs
         return hook
 
-    if model_name == 'BridgeTower':
+    model = BridgeTowerModel.from_pretrained("BridgeTower/bridgetower-base")
+    processor = BridgeTowerProcessor.from_pretrained(
+        "BridgeTower/bridgetower-base")
+    model = model.to(device)
 
-        model = BridgeTowerModel.from_pretrained("BridgeTower/bridgetower-base")
-        processor = BridgeTowerProcessor.from_pretrained(
-            "BridgeTower/bridgetower-base")
-        model = model.to(device)
+    # Define layers
+    model_layers = {
+            1: model.cross_modal_text_transform,
+            2: model.cross_modal_image_transform,
+            3: model.token_type_embeddings,
+            4: model.vision_model.visual.ln_post,
+            5: model.text_model.encoder.layer[-1].output.LayerNorm,
+            6: model.cross_modal_image_layers[-1].output,
+            7: model.cross_modal_text_layers[-1].output,
+            8: model.cross_modal_image_pooler,
+            9: model.cross_modal_text_pooler,
+            10: model.cross_modal_text_layernorm,
+            11: model.cross_modal_image_layernorm,
+            12: model.cross_modal_text_link_tower[-1],
+            13: model.cross_modal_image_link_tower[-1],
+        }
 
-        # Define layers
-        model_layers = {
-                1: model.cross_modal_text_transform,
-                2: model.cross_modal_image_transform,
-                3: model.token_type_embeddings,
-                4: model.vision_model.visual.ln_post,
-                5: model.text_model.encoder.layer[-1].output.LayerNorm,
-                6: model.cross_modal_image_layers[-1].output,
-                7: model.cross_modal_text_layers[-1].output,
-                8: model.cross_modal_image_pooler,
-                9: model.cross_modal_text_pooler,
-                10: model.cross_modal_text_layernorm,
-                11: model.cross_modal_image_layernorm,
-                12: model.cross_modal_text_link_tower[-1],
-                13: model.cross_modal_image_link_tower[-1],
-            }
+    # register forward hooks with layers of choice
+    layer_selected = model_layers[layer].register_forward_hook(
+        get_features(f"layer_{layer}"))
 
-        # register forward hooks with layers of choice
-        layer_selected = model_layers[layer].register_forward_hook(
-            get_features(layer_name))
+    return model, processor, features, layer_selected
 
-    elif model_name == 'llava':
-        # Add in layers later
-        quantization_config = BitsAndBytesConfig(load_in_4bit=True,
-                                                 bnb_4bit_compute_dtype=torch.float16)
-        model_id = "llava-hf/llava-1.5-7b-hf"
 
-        processor = AutoProcessor.from_pretrained(model_id)
-        model = llava.from_pretrained(model_id,
-                                      quantization_config=quantization_config,
-                                      device_map="auto")
-        layer = model.multi_modal_projector.linear_2
-        layer_selected = layer.register_forward_hook(get_features(layer_name))
+def setup_llava(device, layer):
+    """Function to setup transformers model with layer hooks.
 
-    return device, model, processor, features, layer_selected
+    Parameters
+    ----------
+    layer : int
+        A layer reference for the model.
+        Sets the forward hook on the relevant layer.
+    layer_name : str
+        The name of the layer for which the forward hook is set.
+
+    Returns
+    -------
+    device : str
+        The device used for model computation. Can be 'cuda' or 'cpu'.
+    model : torch.nn.Module
+        The initialized model.
+    processor : transformers.PreTrainedProcessor
+        The initialized processor.
+    features : dict
+        A dictionary to store the output features of the forward hook.
+    layer_selected : torch.utils.hooks.RemovableHandle
+        The handle for the registered forward hook.
+
+    Notes
+    -----
+    This function sets up a transformers model with layer hooks. It
+    initializes the model and processor based on the
+    provided model name. It also registers a forward hook on the specified
+    layer and stores the output features in the
+    `features` dictionary."""
+    # placeholder for batch features
+    features = {}
+
+    def get_features(name):
+        def hook(model, input, output):
+            # detached_outputs = [tensor.detach() for tensor in output]
+            last_output = output[-1].detach()
+            features[name] = last_output  # detached_outputs
+        return hook
+
+    # Add in layers later
+    quantization_config = BitsAndBytesConfig(load_in_4bit=True,
+                                             bnb_4bit_compute_dtype=torch.float16)
+    model_id = "llava-hf/llava-1.5-7b-hf"
+
+    processor = AutoProcessor.from_pretrained(model_id)
+    model = llava.from_pretrained(model_id,
+                                  quantization_config=quantization_config,
+                                  device_map="auto")
+    layer = model.multi_modal_projector.linear_2
+    layer_selected = layer.register_forward_hook(get_features(layer))
+
+    return model, processor, features, layer_selected
 
 
 def process_model_input(model, processor, input_data, device):
