@@ -1,0 +1,51 @@
+Create a pipeline for running different models to compare to brain data
+
+Different variables
+1. model
+2. raw stimuli (images, movies, text, etc) & corresponding brain data
+    # 1 & 2 create basis for voxelwise encoding model
+3. stimuli to predict -- could be output
+4. brain data to correlate -- could be output
+
+example: Bridgetower crossmodal movie --> story pipeline
+1. Bridgetower
+2. Movie frames & brain data
+3. story transcript
+4. brain listen to stories
+
+Tree:
+
+1. Select multimodal model: BridgeTower or LLaVA
+|
+|---2.Use BT data (convenient)
+|       |
+|       |----3.vision VEM model
+|       |       |
+|       |       |----4.predict brain for new stimuli
+|       |               |----5.(OPTIONAL)correlate to existing data (model evaluation)
+|       |
+|       |----3.language VEM model
+|               |----4.predict brain for new stimuli
+|                       |----5.(OPTIONAL)correlate to existing data (model evaluation)
+|
+|---2.Use other data (need raw stimuli and brain data)
+        |
+        |----3.Build VEM model (vision or langauge or both)
+        |       |
+        |       |----4.predict brain for new stimuli
+        |               |----5.(OPTIONAL)correlate to existing data (model evaluation)
+        |
+        |----3.language VEM model
+                |----4.predict brain for new stimuli
+                        |----5.(OPTIONAL)correlate to existing data (model evaluation)
+
+
+Global steps:
+1. model setup -- only need once because we use the same model and layer extraction throughout pipeline
+
+Common steps aka functions:
+- feature extraction:
+    - images: handle diff image types (hdf loader, etc)
+    - text: handle diff text types (textgrid loader)
+- ridge regression:
+    - set up standard pipeline for creation of voxelwise encoding models
