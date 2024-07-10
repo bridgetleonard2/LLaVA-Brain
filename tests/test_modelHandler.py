@@ -1,4 +1,4 @@
-import model_handlerCLASS
+from classes import model_handlerCLASS
 from PIL import Image
 import requests
 
