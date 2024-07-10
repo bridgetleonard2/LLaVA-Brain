@@ -1,5 +1,5 @@
 from classes import model_handlerCLASS
-import visual_featuresCLASS
+import classes.visual_featuresCLASS as visual_featuresCLASS
 
 model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)
