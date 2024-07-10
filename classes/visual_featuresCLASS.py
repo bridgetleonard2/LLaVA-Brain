@@ -43,10 +43,13 @@ class VisualFeatures:
 
     def load_image(self):
         if self.data_type == "hdf":
-            self.stim_data = load_hdf5_array(self.path)
+            self.stim_data = load_hdf5_array(self.path,
+                                             key='stimuli')
+            print(self.stim_data)
             if self.ModelHandler.model_name == 'llava':
                 # convert list to np.array
                 self.stim_data = np.array(self.stim_data)
+                print(self.stim_data.shape)
 
     def get_features(self, n=30):
         # prepare images for model
