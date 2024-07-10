@@ -22,9 +22,6 @@ class ModelHandler:
             self.model_id = "BridgeTower/bridgetower-base"
             self.processor = BridgeTowerProcessor
 
-    def select_layer(self):
-        self.layer = self.model.multi_modal_projector.linear_2
-
     def load_model(self):
         device = torch.device('cuda')
 
@@ -35,6 +32,9 @@ class ModelHandler:
         else:
             self.model = self.model.from_pretrained(self.model_id,
                                                     device=device)
+
+        # select layer
+        self.layer = self.model.multi_modal_projector.linear_2
 
         self.processor = self.processor.from_pretrained(self.model_id)
 

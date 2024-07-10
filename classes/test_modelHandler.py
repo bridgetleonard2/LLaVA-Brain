@@ -4,7 +4,6 @@ import requests
 
 model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)
-model_handler.select_layer()
 model_handler.load_model()
 
 # test feature extraction
