@@ -25,7 +25,7 @@ class ModelHandler:
     def load_model(self):
         device = torch.device('cuda')
 
-        if self.quant:
+        if self.q:
             self.model = self.model.from_pretrained(self.model_id,
                                                     quantization_config=self.q,
                                                     device=device)
