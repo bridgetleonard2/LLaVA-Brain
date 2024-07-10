@@ -39,7 +39,6 @@ class VisualFeatures:
     def __init__(self, path, ModelHandler):
         self.path = path
         self.data_type = path.split('.')[-1]
-        print(self.data_type)
         self.ModelHandler = ModelHandler
 
     def load_image(self):

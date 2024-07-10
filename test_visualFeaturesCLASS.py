@@ -5,7 +5,7 @@ model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)
 model_handler.load_model()
 
-movie_path = '../bridgetower-brain/data/raw_stimuli_shortclips/stimuli/train_00.hdf'
+movie_path = '../bridgetower-brain/data/raw_stimuli/shortclips/stimuli/train_00.hdf'
 
 visual_features = visual_featuresCLASS.VisualFeatures(movie_path, model_handler)
 visual_features.load_image()
