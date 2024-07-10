@@ -23,7 +23,7 @@ class ModelHandler:
             self.processor = BridgeTowerProcessor
 
     def load_model(self):
-        device = torch.device('cuda')
+        # device = torch.device('cuda')
 
         if self.q:
             self.model = self.model.from_pretrained(self.model_id,
