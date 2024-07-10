@@ -28,10 +28,10 @@ class ModelHandler:
         if self.q:
             self.model = self.model.from_pretrained(self.model_id,
                                                     quantization_config=self.q,
-                                                    device=device)
+                                                    device_map="auto")
         else:
             self.model = self.model.from_pretrained(self.model_id,
-                                                    device=device)
+                                                    device_map="auto")
 
         # select layer
         self.layer = self.model.multi_modal_projector.linear_2
