@@ -54,16 +54,16 @@ class VisualFeatures:
     def get_features(self, n=30):
         # prepare images for model
         # text is just blank strings for each of the items in stim_data
-        text = ["" for i in range(self.stim_data.shape[0])]
-        model_inputs = self.ModelHandler.processor(self.stim_data, text, return_tensors='pt')
-
-        model_inputs = {key: value.to(self.ModelHandler.device) for key,
-                        value in model_inputs.items()}
 
         # **RESET FEATURES DICT HERE** #
         self.ModelHandler.reset_features()
 
-        _ = self.ModelHandler.model(**model_inputs)
+        for image in tqdm(self.stim_data):
+            model_input = self.ModelHandler.processor(image, "", return_tensors='pt')
+            model_input = {key: value.to(self.ModelHandler.device) for key,
+                           value in model_input.items()}
+
+            _ = self.ModelHandler.model(**model_input)
 
         # Now features will be a dict with one key: 'layer'
         tensors = self.ModelHandler.features['layer']
