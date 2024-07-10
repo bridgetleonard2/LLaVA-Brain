@@ -46,6 +46,8 @@ Global steps:
 Common steps aka functions:
 - feature extraction:
     - images: handle diff image types (hdf loader, etc)
+        - have separate image handler
     - text: handle diff text types (textgrid loader)
+        - have separate text handler
 - ridge regression:
     - set up standard pipeline for creation of voxelwise encoding models

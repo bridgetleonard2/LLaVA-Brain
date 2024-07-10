@@ -23,7 +23,7 @@ class ModelHandler:
             self.processor = BridgeTowerProcessor
 
     def load_model(self):
-        # device = torch.device('cuda')
+        self.device = torch.device('cuda')
 
         if self.q:
             self.model = self.model.from_pretrained(self.model_id,
@@ -38,7 +38,9 @@ class ModelHandler:
 
         self.processor = self.processor.from_pretrained(self.model_id)
 
-        self.features = {}
+        # dictionary of list for layer of interest
+        # dict in case multiple layers of interest
+        self.features = {'layer': []}
 
         def get_features(name):
             def hook(model, input, output):
