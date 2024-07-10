@@ -51,7 +51,7 @@ class VisualFeatures:
     def get_features(self, n=30):
         # prepare images for model
         # text is just blank strings for each of the items in stim_data
-        text = ["" for i in range(len(self.stim_data))]
+        text = ["" for i in range(self.stim_data.shape[0])]
         model_inputs = self.ModelHandler.processor(self.stim_data, text, return_tensors='pt')
 
         model_inputs = {key: value.to(self.ModelHandler.device) for key,
