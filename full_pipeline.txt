@@ -15,7 +15,7 @@ example: Bridgetower crossmodal movie --> story pipeline
 
 Tree:
 
-1. Select multimodal model: BridgeTower or LLaVA
+1. Select multimodal model: BridgeTower or LLaVA & layer of interest
 |
 |---2.Use BT data (convenient)
 |       |
