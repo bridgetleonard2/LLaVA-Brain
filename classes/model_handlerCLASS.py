@@ -9,6 +9,7 @@ from transformers import BitsAndBytesConfig
 
 class ModelHandler:
     def __init__(self, model_name):
+        self.model_name = model_name
         if model_name == 'llava':
             self.model = LlavaForConditionalGeneration
             self.model_id = "llava-hf/llava-1.5-7b-hf"
