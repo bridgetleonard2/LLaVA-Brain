@@ -16,7 +16,7 @@ image = Image.open(requests.get(url, stream=True).raw)
 # "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user\n<image>\nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
 prompt = "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user\n<image>\nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
 
-inputs = model_handler.processor(prompt, image, return_tensors="pt").to('cuda')
+inputs = model_handler.processor(text=prompt, images=image, return_tensors="pt").to('cuda')
 
 # autoregressively complete prompt
 output = model_handler.model.generate(**inputs, max_new_tokens=100)

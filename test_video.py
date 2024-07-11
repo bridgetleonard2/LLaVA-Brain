@@ -45,10 +45,14 @@ movie = np.array(movie)
 
 # llava-v1.6-34b-hf requires the following format:
 # "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user\n<image>\nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
-prompt = "what's going on?"
 image = movie[0]
+image = Image.fromarray(image)
+# Define the prompt and expected input format
+prompt = "What's going on?"
+formatted_prompt = f"system\nAnswer the questions.\nuser\n<image>\n{prompt}\nassistant\n"
 
-inputs = model_handler.processor(prompt, image, return_tensors="pt").to('cuda')
+# Process the prompt and image
+inputs = model_handler.processor(formatted_prompt, image, return_tensors="pt").to('cuda')
 
 # autoregressively complete prompt
 output = model_handler.model.generate(**inputs, max_new_tokens=100)
