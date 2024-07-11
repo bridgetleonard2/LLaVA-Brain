@@ -5,7 +5,6 @@ import requests
 model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)
 model_handler.load_model()
-model_handler.set_hook()
 
 # test feature extraction
 
@@ -30,4 +29,4 @@ features = model_handler.features['layer']  # This will contain the extracted fe
 # print some of features
 print(features[:10])
 
-model_handler.remove_hook()
+model_handler.reset_features()  # Reset the features for the next extraction

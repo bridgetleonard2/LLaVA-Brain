@@ -39,7 +39,6 @@ class ModelHandler:
 
         self.processor = self.processor.from_pretrained(self.model_id)
 
-    def set_hook(self):
         # dictionary of list for layer of interest
         # dict in case multiple layers of interest
         self.features = {'layer': []}
@@ -53,5 +52,5 @@ class ModelHandler:
 
         self.hook = self.layer.register_forward_hook(get_features('layer'))
 
-    def remove_hook(self):
-        self.hook.remove()
+    def reset_features(self):
+        self.features = {'layer': []}
