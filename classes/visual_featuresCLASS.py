@@ -61,6 +61,7 @@ class VisualFeatures:
         test_image = self.stim_data[0]
         test_input = self.ModelHandler.processor("", test_image, return_tensors='pt')
         test_input = {key: value.to(self.ModelHandler.device) for key, value in test_input.items()}
+        print(self.ModelHandler.features)
         self.ModelHandler.reset_features()
 
         for batch_idx in tqdm(range(num_batches), desc="Processing batches"):
