@@ -53,15 +53,20 @@ class VisualFeatures:
                 self.stim_data = [Image.fromarray(arr) for arr in self.stim_data]
 
     def get_features(self, batch_size=30, n=30):
+        prompt = ""
         # prepare images for model
-
+        if self.ModelHandler.model_name == 'llava':
+            # Follow prompt format:
+            formatted_prompt = f"system\nAnswer the questions.\nuser\n<image>\n{prompt}\nassistant\n"
+        else:
+            formatted_prompt = prompt
         # text is just blank strings for each of the items in stim_data
-        text = ["" for i in range(self.stim_data.shape[0])]
+        text = [formatted_prompt for i in range(self.stim_data.shape[0])]
         num_batches = (self.stim_data.shape[0] + batch_size - 1) // batch_size
 
         print("Running test")
         test_image = self.stim_data[0]
-        test_input = self.ModelHandler.processor("", test_image, return_tensors='pt')
+        test_input = self.ModelHandler.processor(text[0], test_image, return_tensors='pt')
         test_input = {key: value.to(self.ModelHandler.device) for key, value in test_input.items()}
         print(self.ModelHandler.features)
         self.ModelHandler.reset_features()
