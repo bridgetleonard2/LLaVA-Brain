@@ -62,14 +62,15 @@ class VisualFeatures:
         text = [formatted_prompt for i in range(self.stim_data.shape[0])]
         num_batches = (self.stim_data.shape[0] + batch_size - 1) // batch_size
 
-        print("Running test")
-        test_image = self.stim_data[0]
-        test_text = text[0]
-        test_input = self.ModelHandler.processor(test_text, test_image, return_tensors='pt').to('cuda')
-        with torch.no_grad():
-            _ = self.ModelHandler.model.generate(**test_input, max_new_tokens=100)
-        print(self.ModelHandler.features)
+        # print("Running test")
+        # test_image = self.stim_data[0]
+        # test_text = text[0]
+        # test_input = self.ModelHandler.processor(test_text, test_image, return_tensors='pt').to('cuda')
+        # with torch.no_grad():
+        #     _ = self.ModelHandler.model.generate(**test_input, max_new_tokens=100)
+        # print(self.ModelHandler.features)
         self.ModelHandler.reset_features()
+        all_tensors = []
 
         for batch_idx in tqdm(range(num_batches), desc="Processing batches"):
             batch_start = batch_idx * batch_size
@@ -84,23 +85,28 @@ class VisualFeatures:
             # Perform model inference on the batch
             with torch.no_grad():
                 _ = self.ModelHandler.model.generate(**model_inputs)
+            
+            batch_tensors = self.ModelHandler.features['layer']
+            all_tensors.extend(batch_tensors)
+
+            self.ModelHandler.reset_feature()
 
         # Now features will be a dict with one key: 'layer'
-        tensors = self.ModelHandler.features['layer']
-        print(f"Captured {len(tensors)} tensors")
+        # tensors = self.ModelHandler.features['layer']
+        print(f"Captured {len(all_tensors)} tensors")
 
         average_tensors = []
         # for every n tensor, take the average
-        for i in tqdm(range(0, len(tensors), n)):
+        for i in tqdm(range(0, len(all_tensors), n)):
             try:
-                n_tensors = tensors[i:i+10]
+                n_tensors = all_tensors[i:i+10]
                 average_tensors.append(torch.mean(torch.stack(n_tensors), dim=0))
             except Exception as e:
                 print(f"Failed to average tensors: {e}")
-                n_tensors = tensors[i:i+10]
+                n_tensors = all_tensors[i:i+10]
 
                 # size of first tensor
-                first_size = tensors[0].size
+                first_size = all_tensors[0].size
 
                 if not all(tensor.size() == first_size for tensor in n_tensors):
                     print("tensor size mismatch")
@@ -115,4 +121,4 @@ class VisualFeatures:
 
         self.visualFeatures = np.array(average_tensors_numpy)
 
-        self.ModelHandler.remove_hook()
+        self.ModelHandler.reset_features()
