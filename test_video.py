@@ -2,6 +2,7 @@ from classes import model_handlerCLASS
 from PIL import Image
 import requests
 import numpy as np
+import h5py
 
 model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)
