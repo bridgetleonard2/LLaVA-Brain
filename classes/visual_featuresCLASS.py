@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import h5py
-from PIL import Image
 
 # Progress bar
 from tqdm import tqdm
@@ -50,7 +49,6 @@ class VisualFeatures:
                 # convert list to np.array
                 self.stim_data = np.array(self.stim_data)
                 print(self.stim_data.shape)
-                self.stim_data = [Image.fromarray(arr) for arr in self.stim_data]
 
     def get_features(self, batch_size=30, n=30):
         prompt = ""

@@ -46,7 +46,7 @@ movie = np.array(movie)
 # llava-v1.6-34b-hf requires the following format:
 # "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user\n<image>\nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
 image = movie[0]
-image = Image.fromarray(image)
+# image = Image.fromarray(image)
 # Define the prompt and expected input format
 prompt = "What's going on?"
 formatted_prompt = f"system\nAnswer the questions.\nuser\n<image>\n{prompt}\nassistant\n"
