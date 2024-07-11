@@ -67,7 +67,7 @@ class VisualFeatures:
             batch_text = text[batch_start:batch_end]
 
             model_inputs = self.ModelHandler.processor(images=batch_images, text=batch_text, return_tensors='pt')
-            model_inputs = {key: value.to(self.device) for key, value in model_inputs.items()}
+            model_inputs = {key: value.to(self.ModelHandler.device) for key, value in model_inputs.items()}
 
             # Perform model inference on the batch
             with torch.no_grad():
