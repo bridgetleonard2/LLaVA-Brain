@@ -45,7 +45,6 @@ class VisualFeatures:
         if self.data_type == "hdf":
             self.stim_data = load_hdf5_array(self.path,
                                              key='stimuli')
-            print(self.stim_data)
             if self.ModelHandler.model_name == 'llava':
                 # convert list to np.array
                 self.stim_data = np.array(self.stim_data)
@@ -64,8 +63,8 @@ class VisualFeatures:
         self.ModelHandler.reset_features()
 
         # Save memory without gradient calculations
-        with torch.no_grad():
-            _ = self.ModelHandler.model(**model_inputs)
+        #with torch.no_grad():
+        _ = self.ModelHandler.model(**model_inputs)
 
         # Now features will be a dict with one key: 'layer'
         tensors = self.ModelHandler.features['layer']
