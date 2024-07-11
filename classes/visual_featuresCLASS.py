@@ -64,8 +64,9 @@ class VisualFeatures:
 
         print("Running test")
         test_image = self.stim_data[0]
-        test_input = self.ModelHandler.processor(text[0], test_image, return_tensors='pt')
-        test_input = {key: value.to(self.ModelHandler.device) for key, value in test_input.items()}
+        test_text = text[0]
+        test_input = self.ModelHandler.processor(test_text, test_image, return_tensors='pt').to('cuda')
+        _ = self.ModelHandler.model.generate(**test_input, max_new_tokens=100)
         print(self.ModelHandler.features)
         self.ModelHandler.reset_features()
 
@@ -80,7 +81,7 @@ class VisualFeatures:
             model_inputs = {key: value.to(self.ModelHandler.device) for key, value in model_inputs.items()}
 
             # Perform model inference on the batch
-            _ = self.ModelHandler.model(**model_inputs)
+            _ = self.ModelHandler.model.generate(**model_inputs)
 
         # Now features will be a dict with one key: 'layer'
         tensors = self.ModelHandler.features['layer']
