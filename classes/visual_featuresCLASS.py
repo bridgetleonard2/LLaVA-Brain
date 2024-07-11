@@ -89,7 +89,7 @@ class VisualFeatures:
             batch_tensors = self.ModelHandler.features['layer']
             all_tensors.extend(batch_tensors)
 
-            self.ModelHandler.reset_feature()
+            self.ModelHandler.reset_features()
 
         # Now features will be a dict with one key: 'layer'
         # tensors = self.ModelHandler.features['layer']
