@@ -50,24 +50,32 @@ class VisualFeatures:
                 self.stim_data = np.array(self.stim_data)
                 print(self.stim_data.shape)
 
-    def get_features(self, n=30):
+    def get_features(self, batch_size=30, n=30):
         # prepare images for model
-        # text is just blank strings for each of the items in stim_data
-        text = ["" for i in range(self.stim_data.shape[0])]
-        model_inputs = self.ModelHandler.processor(images=self.stim_data, text=text, return_tensors='pt')
-
-        model_inputs = {key: value.to(self.ModelHandler.device) for key,
-                        value in model_inputs.items()}
-
         # **RESET FEATURES DICT HERE** #
         self.ModelHandler.reset_features()
 
-        # Save memory without gradient calculations
-        #with torch.no_grad():
-        _ = self.ModelHandler.model(**model_inputs)
+        # text is just blank strings for each of the items in stim_data
+        text = ["" for i in range(self.stim_data.shape[0])]
+        num_batches = (self.stim_data.shape[0] + batch_size - 1) // batch_size
+
+        for batch_idx in tqdm(range(num_batches), desc="Processing batches"):
+            batch_start = batch_idx * batch_size
+            batch_end = min(batch_start + batch_size, self.stim_data.shape[0])
+
+            batch_images = self.stim_data[batch_start:batch_end]
+            batch_text = text[batch_start:batch_end]
+
+            model_inputs = self.processor(images=batch_images, text=batch_text, return_tensors='pt')
+            model_inputs = {key: value.to(self.device) for key, value in model_inputs.items()}
+
+            # Perform model inference on the batch
+            with torch.no_grad():
+                _ = self.model(**model_inputs)
 
         # Now features will be a dict with one key: 'layer'
         tensors = self.ModelHandler.features['layer']
+        print(f"Captured {len(tensors)} tensors")
 
         average_tensors = []
         # for every n tensor, take the average
