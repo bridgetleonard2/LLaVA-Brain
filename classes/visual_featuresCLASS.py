@@ -66,12 +66,12 @@ class VisualFeatures:
             batch_images = self.stim_data[batch_start:batch_end]
             batch_text = text[batch_start:batch_end]
 
-            model_inputs = self.processor(images=batch_images, text=batch_text, return_tensors='pt')
+            model_inputs = self.ModelHandler.processor(images=batch_images, text=batch_text, return_tensors='pt')
             model_inputs = {key: value.to(self.device) for key, value in model_inputs.items()}
 
             # Perform model inference on the batch
             with torch.no_grad():
-                _ = self.model(**model_inputs)
+                _ = self.ModelHandler.model(**model_inputs)
 
         # Now features will be a dict with one key: 'layer'
         tensors = self.ModelHandler.features['layer']
