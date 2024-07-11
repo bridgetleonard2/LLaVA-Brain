@@ -63,7 +63,9 @@ class VisualFeatures:
         # **RESET FEATURES DICT HERE** #
         self.ModelHandler.reset_features()
 
-        _ = self.ModelHandler.model(**model_inputs)
+        # Save memory without gradient calculations
+        with torch.no_grad():
+            _ = self.ModelHandler.model(**model_inputs)
 
         # Now features will be a dict with one key: 'layer'
         tensors = self.ModelHandler.features['layer']
