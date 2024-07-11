@@ -52,8 +52,8 @@ class VisualFeatures:
 
     def get_features(self, batch_size=30, n=30):
         # prepare images for model
-        # **RESET FEATURES DICT HERE** #
-        self.ModelHandler.reset_features()
+        # **LOAD FEATURES DICT HERE** #
+        self.ModelHandler.set_hook()
 
         # text is just blank strings for each of the items in stim_data
         text = ["" for i in range(self.stim_data.shape[0])]
@@ -102,3 +102,4 @@ class VisualFeatures:
 
         self.visualFeatures = np.array(average_tensors_numpy)
 
+        self.ModelHandler.remove_hook()
