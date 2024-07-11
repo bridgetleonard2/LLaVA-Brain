@@ -70,8 +70,7 @@ class VisualFeatures:
             model_inputs = {key: value.to(self.ModelHandler.device) for key, value in model_inputs.items()}
 
             # Perform model inference on the batch
-            with torch.no_grad():
-                _ = self.ModelHandler.model(**model_inputs)
+            _ = self.ModelHandler.model(**model_inputs)
 
         # Now features will be a dict with one key: 'layer'
         tensors = self.ModelHandler.features['layer']
