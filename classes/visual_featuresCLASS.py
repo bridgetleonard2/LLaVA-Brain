@@ -83,7 +83,7 @@ class VisualFeatures:
             with torch.no_grad():
                 _ = self.ModelHandler.model.generate(**model_inputs)
 
-            print("Updates features size", np.array(self.ModelHandler.features['layer']).shape)
+            # print("Updates features size", np.array(self.ModelHandler.features['layer']).shape)
 
         # print("Try all")
 
