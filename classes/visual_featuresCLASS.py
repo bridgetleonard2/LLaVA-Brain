@@ -48,7 +48,6 @@ class VisualFeatures:
             if self.ModelHandler.model_name == 'llava':
                 # convert list to np.array
                 self.stim_data = np.array(self.stim_data)
-                print(self.stim_data.shape)
 
     def get_features(self, batch_size=30, n=30):
         prompt = ""
@@ -62,13 +61,6 @@ class VisualFeatures:
         text = [formatted_prompt for i in range(self.stim_data.shape[0])]
         num_batches = (self.stim_data.shape[0] + batch_size - 1) // batch_size
 
-        # print("Running test")
-        # test_image = self.stim_data[0]
-        # test_text = text[0]
-        # test_input = self.ModelHandler.processor(test_text, test_image, return_tensors='pt').to('cuda')
-        # with torch.no_grad():
-        #     _ = self.ModelHandler.model.generate(**test_input, max_new_tokens=100)
-        # print(self.ModelHandler.features)
         self.ModelHandler.reset_features()
         all_tensors = []
 
@@ -85,8 +77,9 @@ class VisualFeatures:
             # Perform model inference on the batch
             with torch.no_grad():
                 _ = self.ModelHandler.model.generate(**model_inputs)
-            
+
             batch_tensors = self.ModelHandler.features['layer']
+            print(len(batch_tensors))
             all_tensors.extend(batch_tensors)
 
             self.ModelHandler.reset_features()
