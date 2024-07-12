@@ -1,8 +1,6 @@
 from classes import model_handlerCLASS
-from PIL import Image
-import requests
 import numpy as np
-import h5py
+import h5py  # type: ignore
 
 model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)
@@ -44,15 +42,20 @@ movie = load_hdf5_array(path, key='stimuli')
 movie = np.array(movie)
 
 # llava-v1.6-34b-hf requires the following format:
-# "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user\n<image>\nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
+# "<|im_start|>system\nAnswer the questions.
+# <|im_end|><|im_start|>user\n<image>\nWhat is shown in this image?<|im_end|>
+# <|im_start|>assistant\n"
 image = movie[0]
 # image = Image.fromarray(image)
 # Define the prompt and expected input format
 prompt = "What's going on?"
-formatted_prompt = f"system\nAnswer the questions.\nuser\n<image>\n{prompt}\nassistant\n"
+formatted_prompt = (
+    f"system\nAnswer the questions.\nuser\n<image>\n{prompt}\nassistant\n"
+)
 
 # Process the prompt and image
-inputs = model_handler.processor(formatted_prompt, image, return_tensors="pt").to('cuda')
+inputs = model_handler.processor(formatted_prompt,
+                                 image, return_tensors="pt").to('cuda')
 
 # autoregressively complete prompt
 output = model_handler.model.generate(**inputs, max_new_tokens=100)
@@ -60,7 +63,7 @@ output = model_handler.model.generate(**inputs, max_new_tokens=100)
 print(model_handler.processor.decode(output[0], skip_special_tokens=True))
 
 # Extracted features:
-features = model_handler.features['layer']  # This will contain the extracted features from the specified layer
+features = model_handler.features['layer']
 
 # print some of features
 print(features[:10])

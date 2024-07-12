@@ -1,11 +1,11 @@
-import torch
+import torch   # type: ignore
 import numpy as np
 
 # models
-from transformers import BridgeTowerModel, BridgeTowerProcessor
-from transformers import AutoProcessor
-from transformers import LlavaForConditionalGeneration
-from transformers import BitsAndBytesConfig
+from transformers import BridgeTowerModel, BridgeTowerProcessor  # type: ignore
+from transformers import AutoProcessor  # type: ignore
+from transformers import LlavaForConditionalGeneration  # type: ignore
+from transformers import BitsAndBytesConfig  # type: ignore
 
 
 class ModelHandler:

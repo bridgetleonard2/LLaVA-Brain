@@ -48,7 +48,7 @@ class VisualFeatures:
                 # convert list to np.array
                 self.stim_data = np.array(self.stim_data)
 
-    def get_features(self, batch_size=300, n=30):
+    def get_features(self, batch_size=100, n=30):
         prompt = ""
         # prepare images for model
         if self.ModelHandler.model_name == 'llava':
@@ -85,16 +85,6 @@ class VisualFeatures:
 
             print("Updates features size",
                   self.ModelHandler.features['layer'].shape)
-
-        # print("Try all")
-
-        # model_inputs = self.ModelHandler.processor(images=self.stim_data,
-        #                                            text=text,
-        #                                            return_tensors='pt')
-        # model_inputs = {key: value.to(self.ModelHandler.device) for key, value in model_inputs.items()}
-
-        # with torch.no_grad():
-        #     _ = self.ModelHandler.model.generate(**model_inputs)
 
         all_tensors = self.ModelHandler.features['layer']
 
