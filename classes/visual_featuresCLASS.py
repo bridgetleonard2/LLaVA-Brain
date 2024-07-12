@@ -48,7 +48,7 @@ class VisualFeatures:
                 # convert list to np.array
                 self.stim_data = np.array(self.stim_data)
 
-    def get_features(self, batch_size=60, n=30):
+    def get_features(self, batch_size=50, n=30):
         prompt = ""
         # prepare images for model
         if self.ModelHandler.model_name == 'llava':
