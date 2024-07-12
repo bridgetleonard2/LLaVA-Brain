@@ -1,5 +1,9 @@
-from transformers import LlavaNextProcessor, LlavaNextForConditionalGeneration, BitsAndBytesConfig
-import torch
+from transformers import (  # type: ignore
+    LlavaNextProcessor,
+    LlavaNextForConditionalGeneration,
+    BitsAndBytesConfig,
+)
+import torch  # type: ignore
 from PIL import Image
 import requests
 
@@ -14,16 +18,28 @@ quantization_config = BitsAndBytesConfig(
 )
 
 # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = LlavaNextForConditionalGeneration.from_pretrained(model_id, quantization_config=quantization_config, device_map="auto")
+model = LlavaNextForConditionalGeneration.from_pretrained(
+    model_id,
+    quantization_config=quantization_config,
+    device_map="auto"
+)
 # model.to(device)
 
 # prepare image and text prompt, using the appropriate prompt template
-url = "https://github.com/haotian-liu/LLaVA/blob/1a91fc274d7c35a9b50b3cb29c4247ae5837ce39/images/llava_v1_5_radar.jpg?raw=true"
+url = (
+    "https://github.com/haotian-liu/LLaVA/blob/"
+    "1a91fc274d7c35a9b50b3cb29c4247ae5837ce39/images/llava_v1_5_radar.jpg"
+    "?raw=true"
+)
 image = Image.open(requests.get(url, stream=True).raw)
 
 # llava-v1.6-34b-hf requires the following format:
-# "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user\n<image>\nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
-prompt = "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user\n<image>\nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
+# "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user\n<image>
+# \nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
+prompt = (
+    "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user"
+    "\n<image>\nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
+)
 
 inputs = processor(prompt, image, return_tensors="pt").to('cuda')
 

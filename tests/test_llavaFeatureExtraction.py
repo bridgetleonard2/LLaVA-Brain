@@ -1,6 +1,10 @@
 # confirm that feature extraction works with llava
-from transformers import LlavaNextProcessor, LlavaNextForConditionalGeneration, BitsAndBytesConfig
-import torch
+from transformers import (  # type: ignore
+    LlavaNextProcessor,
+    LlavaNextForConditionalGeneration,
+    BitsAndBytesConfig
+)
+import torch   # type: ignore
 from PIL import Image
 import requests
 
@@ -15,7 +19,10 @@ quantization_config = BitsAndBytesConfig(
 )
 
 # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = LlavaNextForConditionalGeneration.from_pretrained(model_id, quantization_config=quantization_config, device_map="auto")
+model = LlavaNextForConditionalGeneration.from_pretrained(
+    model_id,
+    quantization_config=quantization_config,
+    device_map="auto")
 
 features = {}
 
@@ -28,15 +35,22 @@ def get_features(name):
     return hook
 
 
-layer = model.multi_modal_projector.linear_2.register_forward_hook(get_features('mm_proj_L2'))
+layer = model.multi_modal_projector.linear_2.register_forward_hook(
+    get_features('mm_proj_L2'))
 
 # prepare image and text prompt, using the appropriate prompt template
-url = "https://github.com/haotian-liu/LLaVA/blob/1a91fc274d7c35a9b50b3cb29c4247ae5837ce39/images/llava_v1_5_radar.jpg?raw=true"
+url = ("https://github.com/haotian-liu/LLaVA/blob/"
+       "1a91fc274d7c35a9b50b3cb29c4247ae5837ce39/images/llava_v1_5_radar.jpg?"
+       "raw=true")
 image = Image.open(requests.get(url, stream=True).raw)
 
 # llava-v1.6-34b-hf requires the following format:
-# "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user\n<image>\nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
-prompt = "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user\n<image>\nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
+# "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user\n<image>
+# \nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
+prompt = (
+    "<|im_start|>system\nAnswer the questions.<|im_end|><|im_start|>user\n"
+    "<image>\nWhat is shown in this image?<|im_end|><|im_start|>assistant\n"
+)
 
 inputs = processor(prompt, image, return_tensors="pt").to('cuda')
 
@@ -46,7 +60,7 @@ output = model.generate(**inputs, max_new_tokens=100)
 print(processor.decode(output[0], skip_special_tokens=True))
 
 # Extracted features:
-mm_feat = features['mm_proj_L2']  # This will contain the extracted features from the specified layer
+mm_feat = features['mm_proj_L2']
 
 # print some of mm_feat
 print(mm_feat[:10])
@@ -56,9 +70,14 @@ layer.remove()  # Remove the hook after extracting features
 
 # Works -- Output:
 # What is shown in this image?<|im_start|> assistant
-# The image displays a radar chart, also known as a spider chart, which is a graphical method of displaying multivariate data in the form of a two-dimensional chart of three or more quantitative variables represented on axes starting from the same point.
+# The image displays a radar chart, also known as a spider chart, which is a
+# graphical method of displaying multivariate data in the form of a
+# two-dimensional chart of three or more quantitative variables represented
+# on axes starting from the same point
 
-# In this particular chart, there are several datasets represented by different colors and labels, such as "MM-Vet," "LLaVa-Bench," "Seed-Bench," "MMBench-CN," "
+# In this particular chart, there are several datasets represented by
+# different colors and labels, such as "MM-Vet," "LLaVa-Bench,"
+# "Seed-Bench," "MMBench-CN,"
 # tensor([[ 0.0598, -0.0310, -0.2712,  ..., -0.0336, -0.3164,  0.1720],
 #         [-0.1852,  0.1825, -0.3052,  ..., -0.0571, -0.3198,  0.1362],
 #         [ 0.3123, -0.2148, -0.1020,  ..., -0.1548, -0.0385, -0.0592],

@@ -1,5 +1,5 @@
 import torch   # type: ignore
-import numpy as np
+# import numpy as np
 
 # models
 from transformers import BridgeTowerModel, BridgeTowerProcessor  # type: ignore
@@ -46,10 +46,8 @@ class ModelHandler:
 
         def get_features(name):
             def hook(model, input, output):
-                # detached_outputs = [tensor.detach() for tensor in output]
-                print("Batch output:", np.array(output.detach().cpu()).shape)
+                # print("Batch output:", np.array(output.detach().cpu()).shape)
                 output = output.detach().cpu()
-                # last_output = output[-1].detach().cpu()
                 self.features[name].extend(output)  # detached_outputs
             return hook
 
