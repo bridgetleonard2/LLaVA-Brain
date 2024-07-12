@@ -1,6 +1,6 @@
 import numpy as np
-import torch
-import h5py
+import torch  # type: ignore
+import h5py  # type: ignore
 
 # Progress bar
 from tqdm import tqdm
@@ -48,12 +48,15 @@ class VisualFeatures:
                 # convert list to np.array
                 self.stim_data = np.array(self.stim_data)
 
-    def get_features(self, batch_size=100, n=30):
+    def get_features(self, batch_size=80, n=30):
         prompt = ""
         # prepare images for model
         if self.ModelHandler.model_name == 'llava':
             # Follow prompt format:
-            formatted_prompt = f"system\nAnswer the questions.\nuser\n<image>\n{prompt}\nassistant\n"
+            formatted_prompt = (
+                f"system\nAnswer the questions.\nuser\n<image>\n"
+                f"{prompt}\nassistant\n"
+            )
         else:
             formatted_prompt = prompt
         # text is just blank strings for each of the items in stim_data
@@ -97,24 +100,27 @@ class VisualFeatures:
         for i in tqdm(range(0, len(all_tensors), n)):
             try:
                 n_tensors = all_tensors[i:i+10]
-                average_tensors.append(torch.mean(torch.stack(n_tensors), dim=0))
+                average_tensors.append(torch.mean(torch.stack(n_tensors),
+                                                  dim=0))
             except Exception as e:
                 print(f"Failed to average tensors: {e}")
                 n_tensors = all_tensors[i:i+10]
 
                 # size of first tensor
-                first_size = all_tensors[0].size
+                fst_size = all_tensors[0].size
 
-                if not all(tensor.size() == first_size for tensor in n_tensors):
+                if not all(tensor.size() == fst_size for tensor in n_tensors):
                     print("tensor size mismatch")
                     # find tensor with wrong size
                     for j, tensor in enumerate(n_tensors):
-                        if tensor.size() != first_size:
-                            print(f"Removing tensor: {tensor.size()} from average")
+                        if tensor.size() != fst_size:
+                            print(f"Removing tensor: {tensor.size()} from avg")
                             n_tensors.pop(j)
-                    average_tensors.append(torch.mean(torch.stack(n_tensors), dim=0))
+                    average_tensors.append(torch.mean(torch.stack(n_tensors),
+                                                      dim=0))
 
-        average_tensors_numpy = [tensor.detach().cpu().numpy() for tensor in average_tensors]
+        average_tensors_numpy = [tensor.detach().cpu().numpy() for
+                                 tensor in average_tensors]
 
         self.visualFeatures = np.array(average_tensors_numpy)
 
