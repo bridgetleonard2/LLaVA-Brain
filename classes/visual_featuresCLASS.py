@@ -49,7 +49,7 @@ class VisualFeatures:
                 # convert list to np.array
                 self.stim_data = np.array(self.stim_data)
 
-    def get_features(self, batch_size=30, n=30):
+    def get_features(self, n=30):
         prompt = ""
         # prepare images for model
         if self.ModelHandler.model_name == 'llava':
@@ -59,30 +59,21 @@ class VisualFeatures:
             formatted_prompt = prompt
         # text is just blank strings for each of the items in stim_data
         text = [formatted_prompt for i in range(self.stim_data.shape[0])]
-        num_batches = (self.stim_data.shape[0] + batch_size - 1) // batch_size
 
         self.ModelHandler.reset_features()
-        all_tensors = []
 
-        for batch_idx in tqdm(range(num_batches), desc="Processing batches"):
-            batch_start = batch_idx * batch_size
-            batch_end = min(batch_start + batch_size, self.stim_data.shape[0])
+        for idx in tqdm(range(self.stim_data.shape[0]), desc="Processing images"):
+            image = self.stim_data[idx]
+            text_input = text[idx]
 
-            batch_images = self.stim_data[batch_start:batch_end]
-            batch_text = text[batch_start:batch_end]
-
-            model_inputs = self.ModelHandler.processor(images=batch_images, text=batch_text, return_tensors='pt')
-            model_inputs = {key: value.to(self.ModelHandler.device) for key, value in model_inputs.items()}
+            model_input = self.ModelHandler.processor(images=image, text=text_input, return_tensors='pt')
+            model_input = {key: value.to(self.ModelHandler.device) for key, value in model_input.items()}
 
             # Perform model inference on the batch
             with torch.no_grad():
-                _ = self.ModelHandler.model.generate(**model_inputs)
+                _ = self.ModelHandler.model.generate(**model_input)
 
-            batch_tensors = self.ModelHandler.features['layer']
-            print(len(batch_tensors))
-            all_tensors.extend(batch_tensors)
-
-            self.ModelHandler.reset_features()
+        all_tensors = self.ModelHandler.features['layer']
 
         # Now features will be a dict with one key: 'layer'
         # tensors = self.ModelHandler.features['layer']
