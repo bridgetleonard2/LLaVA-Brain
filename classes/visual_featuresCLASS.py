@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-import torch.nn.functional as F
 import h5py
 
 # Progress bar
@@ -66,12 +65,14 @@ class VisualFeatures:
         batch_images = self.stim_data[:30]
         batch_text = text[:30]
 
-        model_inputs = self.ModelHandler.processor(images=batch_images, text=batch_text, return_tensors='pt')
+        model_inputs = self.ModelHandler.processor(images=batch_images,
+                                                   text=batch_text,
+                                                   return_tensors='pt')
         model_inputs = {key: value.to(self.ModelHandler.device) for key, value in model_inputs.items()}
 
-        with torch.no_grad()
+        with torch.no_grad():
             _ = self.ModelHandler.model.generate(**model_inputs)
-        
+
         print(self.ModelHandler.features)
 
         for idx in tqdm(range(self.stim_data.shape[0]), desc="Processing images"):
