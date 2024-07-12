@@ -75,16 +75,16 @@ class VisualFeatures:
 
         print(self.ModelHandler.features)
 
-        for idx in tqdm(range(self.stim_data.shape[0]), desc="Processing images"):
-            image = self.stim_data[idx]
-            text_input = text[idx]
+        # for idx in tqdm(range(self.stim_data.shape[0]), desc="Processing images"):
+        #     image = self.stim_data[idx]
+        #     text_input = text[idx]
 
-            model_input = self.ModelHandler.processor(images=image, text=text_input, return_tensors='pt')
-            model_input = {key: value.to(self.ModelHandler.device) for key, value in model_input.items()}
+        #     model_input = self.ModelHandler.processor(images=image, text=text_input, return_tensors='pt')
+        #     model_input = {key: value.to(self.ModelHandler.device) for key, value in model_input.items()}
 
-            # Perform model inference on the batch
-            with torch.no_grad():
-                _ = self.ModelHandler.model.generate(**model_input)
+        #     # Perform model inference on the batch
+        #     with torch.no_grad():
+        #         _ = self.ModelHandler.model.generate(**model_input)
 
         all_tensors = self.ModelHandler.features['layer']
 

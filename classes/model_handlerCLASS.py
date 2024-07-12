@@ -48,8 +48,9 @@ class ModelHandler:
             def hook(model, input, output):
                 # detached_outputs = [tensor.detach() for tensor in output]
                 print(np.array(output.detach().cpu()).shape)
-                last_output = output[-1].detach().cpu()
-                self.features[name].append(last_output)  # detached_outputs
+                output = output.detach().cpu()
+                # last_output = output[-1].detach().cpu()
+                self.features[name].extend(output)  # detached_outputs
             return hook
 
         self.hook = self.layer.register_forward_hook(get_features('layer'))
