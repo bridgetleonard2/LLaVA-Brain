@@ -62,6 +62,18 @@ class VisualFeatures:
 
         self.ModelHandler.reset_features()
 
+        print("test batch")
+        batch_images = self.stim_data[:30]
+        batch_text = text[:30]
+
+        model_inputs = self.ModelHandler.processor(images=batch_images, text=batch_text, return_tensors='pt')
+        model_inputs = {key: value.to(self.ModelHandler.device) for key, value in model_inputs.items()}
+
+        with torch.no_grad()
+            _ = self.ModelHandler.model.generate(**model_inputs)
+        
+        print(self.ModelHandler.features)
+
         for idx in tqdm(range(self.stim_data.shape[0]), desc="Processing images"):
             image = self.stim_data[idx]
             text_input = text[idx]

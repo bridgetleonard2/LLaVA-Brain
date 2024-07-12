@@ -46,6 +46,7 @@ class ModelHandler:
         def get_features(name):
             def hook(model, input, output):
                 # detached_outputs = [tensor.detach() for tensor in output]
+                print(output)
                 last_output = output[-1].detach().cpu()
                 self.features[name].append(last_output)  # detached_outputs
             return hook
