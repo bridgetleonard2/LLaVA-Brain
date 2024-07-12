@@ -48,7 +48,7 @@ class VisualFeatures:
                 # convert list to np.array
                 self.stim_data = np.array(self.stim_data)
 
-    def get_features(self, n=30):
+    def get_features(self, batch_size=30, n=30):
         prompt = ""
         # prepare images for model
         if self.ModelHandler.model_name == 'llava':
@@ -59,31 +59,41 @@ class VisualFeatures:
         # text is just blank strings for each of the items in stim_data
         text = [formatted_prompt for i in range(self.stim_data.shape[0])]
 
+        # Set number of batches to run through
+        # (based on memory constraints vs time benefit)
+        num_batches = (self.stim_data.shape[0] + batch_size - 1) // batch_size
+
+        # Make sure features is clean before starting
         self.ModelHandler.reset_features()
 
-        # print("test batch")
-        # batch_images = self.stim_data[:30]
-        # batch_text = text[:30]
+        for batch_idx in tqdm(range(num_batches), desc="Processing batches"):
+            batch_start = batch_idx * batch_size
+            batch_end = min(batch_start + batch_size, self.stim_data.shape[0])
 
-        # model_inputs = self.ModelHandler.processor(images=batch_images,
-        #                                            text=batch_text,
+            batch_images = self.stim_data[batch_start:batch_end]
+            batch_text = text[batch_start:batch_end]
+
+            model_inputs = self.ModelHandler.processor(images=batch_images,
+                                                       text=batch_text,
+                                                       return_tensors='pt')
+            model_inputs = {key: value.to(self.ModelHandler.device) for key,
+                            value in model_inputs.items()}
+
+            # Perform model inference on the batch
+            with torch.no_grad():
+                _ = self.ModelHandler.model.generate(**model_inputs)
+
+            print("Updates features size", np.array(self.ModelHandler.features['layer']).shape)
+
+        # print("Try all")
+
+        # model_inputs = self.ModelHandler.processor(images=self.stim_data,
+        #                                            text=text,
         #                                            return_tensors='pt')
         # model_inputs = {key: value.to(self.ModelHandler.device) for key, value in model_inputs.items()}
 
         # with torch.no_grad():
         #     _ = self.ModelHandler.model.generate(**model_inputs)
-
-        # print(self.ModelHandler.features)
-
-        print("Try all")
-
-        model_inputs = self.ModelHandler.processor(images=self.stim_data,
-                                                   text=text,
-                                                   return_tensors='pt')
-        model_inputs = {key: value.to(self.ModelHandler.device) for key, value in model_inputs.items()}
-
-        with torch.no_grad():
-            _ = self.ModelHandler.model.generate(**model_inputs)
 
         all_tensors = self.ModelHandler.features['layer']
 
