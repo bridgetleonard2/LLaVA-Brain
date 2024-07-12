@@ -86,9 +86,6 @@ class VisualFeatures:
             with torch.no_grad():
                 _ = self.ModelHandler.model.generate(**model_inputs)
 
-            print("Updates features size",
-                  self.ModelHandler.features['layer'].shape)
-
         all_tensors = self.ModelHandler.features['layer']
 
         # Now features will be a dict with one key: 'layer'
