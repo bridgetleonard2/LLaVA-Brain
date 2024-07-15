@@ -1,17 +1,122 @@
+# Data loading
 import numpy as np
+import h5py
+import re
+
+# Regression setup
 from scipy.signal import resample
-from sklearn.model_selection import check_cv
-from sklearn.preprocessing import StandardScaler
-from sklearn.utils.validation import (
-    check_random_state, check_is_fitted, check_array)
-from himalaya.backend import set_backend  # type: ignore
+from sklearn.utils.validation import check_random_state
 from sklearn.base import BaseEstimator, TransformerMixin
-from himalaya.ridge import RidgeCV  # type: ignore
-from sklearn.pipeline import make_pipeline
+from sklearn.utils.validation import check_is_fitted, check_array
 
 
-def resample_to_acq(feature_data, fmri_data_shape):
-    dimensions = fmri_data_shape[0]
+def load_hdf5_array(file_name, key=None, slice=slice(0, None)):
+    """Function to load data from an hdf file.
+
+    Parameters
+    ----------
+    file_name: string
+        hdf5 file name.
+    key: string
+        Key name to load. If not provided, all keys will be loaded.
+    slice: slice, or tuple of slices
+        Load only a slice of the hdf5 array. It will load `array[slice]`.
+        Use a tuple of slices to get a slice in multiple dimensions.
+
+    Returns
+    -------
+    result : array or dictionary
+        Array, or dictionary of arrays (if `key` is None).
+    """
+    with h5py.File(file_name, mode='r') as hf:
+        if key is None:
+            data = dict()
+            for k in hf.keys():
+                data[k] = hf[k][slice]
+            return data
+        else:
+            return hf[key][slice]
+
+
+def textgrid_to_array(textgrid):
+    """Function to load transcript from textgrid into a list.
+
+    Parameters
+    ----------
+    textgrid: string
+        TextGrid file name.
+
+    Returns
+    -------
+    full_transcript : Array
+        Array with each word in the story.
+    """
+    if textgrid == 'data/raw_stimuli/textgrids/stimuli/legacy.TextGrid':
+        with open(textgrid, 'r')as file:
+            data = file.readlines()
+
+        full_transcript = []
+        # Important info starts at line 5
+        for line in data[5:]:
+            if line.startswith('2'):
+                index = data.index(line)
+                word = re.search(r'"([^"]*)"', data[index+1].strip()).group(1)
+                full_transcript.append(word)
+    elif textgrid == 'data/raw_stimuli/textgrids/stimuli/life.TextGrid':
+        with open(textgrid, 'r') as file:
+            data = file.readlines()
+
+        full_transcript = []
+        for line in data:
+            if "word" in line:
+                index = data.index(line)
+                words = data[index+6:]  # this is where first word starts
+
+        for i, word in enumerate(words):
+            if i % 3 == 0:
+                word = re.search(r'"([^"]*)"', word.strip()).group(1)
+                full_transcript.append(word)
+    else:
+        with open(textgrid, 'r') as file:
+            data = file.readlines()
+
+        # Important info starts at line 8
+        for line in data[8:]:
+            # We only want item [2] info because those are the words instead
+            # of phonemes
+            if "item [2]" in line:
+                index = data.index(line)
+
+        summary_info = [line.strip() for line in data[index+1:index+6]]
+        print(summary_info)
+
+        word_script = data[index+6:]
+        full_transcript = []
+        for line in word_script:
+            if "intervals" in line:
+                # keep track of which interval we're on
+                ind = word_script.index(line)
+                word = re.search(r'"([^"]*)"',
+                                 word_script[ind+3].strip()).group(1)
+                full_transcript.append(word)
+
+    return np.array(full_transcript)
+
+
+# Loading data
+def remove_nan(data):
+    mask = ~np.isnan(data)
+
+    # Apply the mask and then flatten
+    # This will keep only the non-NaN values
+    data_reshaped = data[mask].reshape(data.shape[0], -1)
+
+    print("fMRI shape:", data_reshaped.shape)
+    return data_reshaped
+
+
+def resample_to_acq(feature_data, fmri_data):
+    dimensions = fmri_data.shape[0]
     data_transposed = feature_data.T
     data_resampled = np.empty((data_transposed.shape[0], dimensions))
 
@@ -23,15 +128,12 @@ def resample_to_acq(feature_data, fmri_data_shape):
     return data_resampled.T
 
 
-def remove_nan(data):
-    mask = ~np.isnan(data)
+def prep_data(fmri_data, feature_data):
+    fmri_reshaped = remove_nan(fmri_data)
 
-    # Apply the mask and then flatten
-    # This will keep only the non-NaN values
-    data_reshaped = data[mask].reshape(data.shape[0], -1)
+    feature_resampled = resample_to_acq(feature_data, fmri_reshaped)
 
-    print("fMRI shape:", data_reshaped.shape)
-    return data_reshaped
+    return fmri_reshaped, feature_resampled
 
 
 def generate_leave_one_run_out(n_samples, run_onsets, random_state=None,
@@ -79,6 +181,46 @@ def generate_leave_one_run_out(n_samples, run_onsets, random_state=None,
             [runs[jj] for jj in range(n_runs) if jj not in val_runs])
         val = np.hstack([runs[jj] for jj in range(n_runs) if jj in val_runs])
         yield train, val
+
+
+def safe_correlation(x, y):
+    """Calculate the Pearson correlation coefficient safely."""
+    # Mean centering
+    x_mean = x - np.mean(x)
+    y_mean = y - np.mean(y)
+
+    # Numerator: sum of the product of mean-centered variables
+    numerator = np.sum(x_mean * y_mean)
+
+    # Denominator: sqrt of product of sums of squared mean-centered variables
+    denominator = np.sqrt(np.sum(x_mean**2) * np.sum(y_mean**2))
+
+    # Safe division
+    if denominator == 0:
+        # Return NaN or another value to indicate undefined correlation
+        return np.nan
+    else:
+        return numerator / denominator
+
+
+def calc_correlation(predicted_fMRI, real_fMRI):
+    # Calculate correlations for each voxel
+    correlation_coefficients = [safe_correlation(predicted_fMRI[:, i],
+                                                 real_fMRI[:, i]) for i in
+                                range(predicted_fMRI.shape[1])]
+    correlation_coefficients = np.array(correlation_coefficients)
+
+    # Check for NaNs in the result
+    nans_in_correlations = np.isnan(correlation_coefficients).any()
+    print(f"NaNs in correlation coefficients: {nans_in_correlations}")
+
+    return correlation_coefficients
+
+
+def remove_run(arrays, index_to_remove):
+    # Return a new list with the specified run removed
+    return [array for idx, array in enumerate(arrays)
+            if idx != index_to_remove]
 
 
 class Delayer(BaseEstimator, TransformerMixin):
@@ -186,79 +328,3 @@ class Delayer(BaseEstimator, TransformerMixin):
         """
         delays = self.delays or [0]  # deals with None
         return np.stack(np.split(Xt, len(delays), axis=axis))
-
-
-def remove_run(arrays, index_to_remove):
-    # Return a new list with the specified run removed
-    return [array for idx, array in enumerate(arrays)
-            if idx != index_to_remove]
-
-
-def set_pipeline(feature_arrays):
-    run_onsets = []
-    current_index = 0
-    for arr in feature_arrays:
-        next_index = current_index + arr.shape[0]
-        run_onsets.append(current_index)
-        current_index = next_index
-
-    print(run_onsets)
-    n_samples_train = len(feature_arrays)
-    cv = generate_leave_one_run_out(n_samples_train, run_onsets)
-    cv = check_cv(cv)  # cross-validation splitter into a reusable list
-
-    # Define the model
-    scaler = StandardScaler(with_mean=True, with_std=False)
-    delayer = Delayer(delays=[1, 2, 3, 4])
-    backend = set_backend("torch_cuda", on_error="warn")
-    print(backend)
-    alphas = np.logspace(1, 20, 20)
-
-    ridge_cv = RidgeCV(
-                alphas=alphas,
-                cv=cv,
-                solver_params=dict(
-                    n_targets_batch=500, n_alphas_batch=5,
-                    n_targets_batch_refit=100))
-
-    pipeline = make_pipeline(
-        scaler,
-        delayer,
-        ridge_cv,
-    )
-
-    return pipeline, backend
-
-
-def safe_correlation(x, y):
-    """Calculate the Pearson correlation coefficient safely."""
-    # Mean centering
-    x_mean = x - np.mean(x)
-    y_mean = y - np.mean(y)
-
-    # Numerator: sum of the product of mean-centered variables
-    numerator = np.sum(x_mean * y_mean)
-
-    # Denominator: sqrt of product of sums of squared mean-centered variables
-    denominator = np.sqrt(np.sum(x_mean**2) * np.sum(y_mean**2))
-
-    # Safe division
-    if denominator == 0:
-        # Return NaN or another value to indicate undefined correlation
-        return np.nan
-    else:
-        return numerator / denominator
-
-
-def calc_correlation(predicted_fMRI, real_fMRI):
-    # Calculate correlations for each voxel
-    correlation_coefficients = [safe_correlation(predicted_fMRI[:, i],
-                                                 real_fMRI[:, i]) for i in
-                                range(predicted_fMRI.shape[1])]
-    correlation_coefficients = np.array(correlation_coefficients)
-
-    # Check for NaNs in the result
-    nans_in_correlations = np.isnan(correlation_coefficients).any()
-    print(f"NaNs in correlation coefficients: {nans_in_correlations}")
-
-    return correlation_coefficients

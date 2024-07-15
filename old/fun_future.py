@@ -23,7 +23,7 @@ from transformers import LlavaForConditionalGeneration as llava
 from transformers import BitsAndBytesConfig
 
 # Specialized functions
-import utils
+import OLDutils
 
 # Progress bar
 from tqdm import tqdm
@@ -206,7 +206,7 @@ def get_movie_features(model_name, movie, subject, layer, layer_name, n=30):
 def load_movie_data(movie):
     data_path = 'data/raw_stimuli/shortclips/stimuli/'
     print("Loading HDF array")
-    return utils.load_hdf5_array(f"{data_path}{movie}.hdf", key='stimuli')
+    return OLDutils.load_hdf5_array(f"{data_path}{movie}.hdf", key='stimuli')
 
 
 def process_movie(movie_data, model, processor, features, n, device):
@@ -249,7 +249,7 @@ def get_story_features(model_name, story, subject, layer, layer_name, n=20):
 def load_story_data(story):
     data_path = 'data/raw_stimuli/textgrids/stimuli/'
     print("Loading TextGrid")
-    return utils.textgrid_to_array(f"{data_path}{story}.TextGrid")
+    return OLDutils.textgrid_to_array(f"{data_path}{story}.TextGrid")
 
 
 def process_story(story_data, model, processor, features, n, device):
@@ -437,8 +437,8 @@ def crossmodal_vision_model(model_name, subject, layer):
     fmri_test = np.load("data/moviedata/" + subject + "/test.npy")
 
     # Prep data
-    train_fmri = utils.remove_nan(fmri_train)
-    test_fmri = utils.remove_nan(fmri_test)
+    train_fmri = OLDutils.remove_nan(fmri_train)
+    test_fmri = OLDutils.remove_nan(fmri_test)
 
     fmri_arrays = [train_fmri, test_fmri]
     feature_arrays = [train00, train01, train02, train03, train04,
@@ -458,13 +458,13 @@ def crossmodal_vision_model(model_name, subject, layer):
         current_index = next_index
 
     n_samples_train = X_train.shape[0]
-    cv = utils.generate_leave_one_run_out(n_samples_train, run_onsets)
+    cv = OLDutils.generate_leave_one_run_out(n_samples_train, run_onsets)
     cv = check_cv(cv)  # cross-validation splitter into a reusable list
 
     # Define the model
     scaler = StandardScaler(with_mean=True, with_std=False)
 
-    delayer = utils.Delayer(delays=[1, 2, 3, 4])
+    delayer = OLDutils.Delayer(delays=[1, 2, 3, 4])
 
     backend = set_backend("torch_cuda", on_error="warn")
     print(backend)
@@ -570,18 +570,18 @@ def crossmodal_language_model(model_name, subject, layer, layer_name):
 
     print(alternateithicatom.shape)
     # Prep data
-    fmri_ai, ai_features = utils.prep_data(fmri_alternateithicatom,
+    fmri_ai, ai_features = OLDutils.prep_data(fmri_alternateithicatom,
                                            alternateithicatom)
-    fmri_avatar, avatar_features = utils.prep_data(fmri_avatar, avatar)
-    fmri_howtodraw, howtodraw_features = utils.prep_data(fmri_howtodraw,
+    fmri_avatar, avatar_features = OLDutils.prep_data(fmri_avatar, avatar)
+    fmri_howtodraw, howtodraw_features = OLDutils.prep_data(fmri_howtodraw,
                                                          howtodraw)
-    fmri_legacy, legacy_features = utils.prep_data(fmri_legacy, legacy)
-    fmri_life, life_features = utils.prep_data(fmri_life, life)
-    fmri_yankees, yankees_features = utils.prep_data(fmri_yankees, yankees)
-    fmri_naked, naked_features = utils.prep_data(fmri_naked, naked)
-    fmri_ode, odetostepfather_features = utils.prep_data(fmri_ode, ode)
-    fmri_souls, souls_features = utils.prep_data(fmri_souls, souls)
-    fmri_under, under_features = utils.prep_data(fmri_undertheinfluence,
+    fmri_legacy, legacy_features = OLDutils.prep_data(fmri_legacy, legacy)
+    fmri_life, life_features = OLDutils.prep_data(fmri_life, life)
+    fmri_yankees, yankees_features = OLDutils.prep_data(fmri_yankees, yankees)
+    fmri_naked, naked_features = OLDutils.prep_data(fmri_naked, naked)
+    fmri_ode, odetostepfather_features = OLDutils.prep_data(fmri_ode, ode)
+    fmri_souls, souls_features = OLDutils.prep_data(fmri_souls, souls)
+    fmri_under, under_features = OLDutils.prep_data(fmri_undertheinfluence,
                                                  undertheinfluence)
 
     fmri_arrays = [fmri_ai, fmri_avatar, fmri_howtodraw,
@@ -604,13 +604,13 @@ def crossmodal_language_model(model_name, subject, layer, layer_name):
         current_index = next_index
 
     n_samples_train = X_train.shape[0]
-    cv = utils.generate_leave_one_run_out(n_samples_train, run_onsets)
+    cv = OLDutils.generate_leave_one_run_out(n_samples_train, run_onsets)
     cv = check_cv(cv)  # cross-validation splitter into a reusable list
 
     # Define the model
     scaler = StandardScaler(with_mean=True, with_std=False)
 
-    delayer = utils.Delayer(delays=[1, 2, 3, 4])
+    delayer = OLDutils.Delayer(delays=[1, 2, 3, 4])
 
     backend = set_backend("torch_cuda", on_error="warn")
     print(backend)
@@ -725,22 +725,22 @@ def story_prediction(model_name, subject, layer, layer_name, vision_encoding_mat
                                      "/undertheinfluence.npy")
 
     # Prep data
-    fmri_ai, ai_features = utils.prep_data(fmri_alternateithicatom,
+    fmri_ai, ai_features = OLDutils.prep_data(fmri_alternateithicatom,
                                            alternateithicatom_transformed)
-    fmri_avatar, avatar_features = utils.prep_data(fmri_avatar,
+    fmri_avatar, avatar_features = OLDutils.prep_data(fmri_avatar,
                                                    avatar_transformed)
-    fmri_howtodraw, howtodraw_features = utils.prep_data(fmri_howtodraw,
+    fmri_howtodraw, howtodraw_features = OLDutils.prep_data(fmri_howtodraw,
                                                          howtodraw_transformed)
-    fmri_legacy, legacy_features = utils.prep_data(fmri_legacy,
+    fmri_legacy, legacy_features = OLDutils.prep_data(fmri_legacy,
                                                    legacy_transformed)
-    fmri_life, life_features = utils.prep_data(fmri_life, life_transformed)
-    fmri_yankees, yankees_features = utils.prep_data(fmri_yankees,
+    fmri_life, life_features = OLDutils.prep_data(fmri_life, life_transformed)
+    fmri_yankees, yankees_features = OLDutils.prep_data(fmri_yankees,
                                                      yankees_transformed)
-    fmri_naked, naked_features = utils.prep_data(fmri_naked, naked_transformed)
-    fmri_ode, odetostepfather_features = utils.prep_data(fmri_ode,
+    fmri_naked, naked_features = OLDutils.prep_data(fmri_naked, naked_transformed)
+    fmri_ode, odetostepfather_features = OLDutils.prep_data(fmri_ode,
                                                          ode_transformed)
-    fmri_souls, souls_features = utils.prep_data(fmri_souls, souls_transformed)
-    fmri_under, under_features = utils.prep_data(fmri_undertheinfluence,
+    fmri_souls, souls_features = OLDutils.prep_data(fmri_souls, souls_transformed)
+    fmri_under, under_features = OLDutils.prep_data(fmri_undertheinfluence,
                                                  undertheinfluence_transformed)
 
     # Make fmri predictions
@@ -757,21 +757,21 @@ def story_prediction(model_name, subject, layer, layer_name, vision_encoding_mat
     under_predictions = np.dot(under_features, vision_encoding_matrix)
 
     # Calculate correlations
-    ai_correlations = utils.calc_correlation(ai_predictions, fmri_ai)
-    avatar_correlations = utils.calc_correlation(avatar_predictions,
+    ai_correlations = OLDutils.calc_correlation(ai_predictions, fmri_ai)
+    avatar_correlations = OLDutils.calc_correlation(avatar_predictions,
                                                  fmri_avatar)
-    howtodraw_correlations = utils.calc_correlation(howtodraw_predictions,
+    howtodraw_correlations = OLDutils.calc_correlation(howtodraw_predictions,
                                                     fmri_howtodraw)
-    legacy_correlations = utils.calc_correlation(legacy_predictions,
+    legacy_correlations = OLDutils.calc_correlation(legacy_predictions,
                                                  fmri_legacy)
-    life_correlations = utils.calc_correlation(life_predictions, fmri_life)
-    yankees_correlations = utils.calc_correlation(yankees_predictions,
+    life_correlations = OLDutils.calc_correlation(life_predictions, fmri_life)
+    yankees_correlations = OLDutils.calc_correlation(yankees_predictions,
                                                   fmri_yankees)
-    naked_correlations = utils.calc_correlation(naked_predictions, fmri_naked)
-    ode_correlations = utils.calc_correlation(odetostepfather_predictions,
+    naked_correlations = OLDutils.calc_correlation(naked_predictions, fmri_naked)
+    ode_correlations = OLDutils.calc_correlation(odetostepfather_predictions,
                                               fmri_ode)
-    souls_correlations = utils.calc_correlation(souls_predictions, fmri_souls)
-    under_correlations = utils.calc_correlation(under_predictions, fmri_under)
+    souls_correlations = OLDutils.calc_correlation(souls_predictions, fmri_souls)
+    under_correlations = OLDutils.calc_correlation(under_predictions, fmri_under)
 
     # Get mean correlation
     all_correlations = np.stack((ai_correlations, avatar_correlations,
@@ -848,8 +848,8 @@ def movie_prediction(subject, layer, language_encoding_model):
     fmri_test = np.load("data/moviedata/" + subject + "/test.npy")
 
     # Prep data
-    fmri_train = utils.remove_nan(fmri_train)
-    fmri_test = utils.remove_nan(fmri_test)
+    fmri_train = OLDutils.remove_nan(fmri_train)
+    fmri_test = OLDutils.remove_nan(fmri_test)
 
     # Make fmri predictions
     feature_arrays = [train00_transformed, train01_transformed,
@@ -866,8 +866,8 @@ def movie_prediction(subject, layer, language_encoding_model):
     predictions_test = np.dot(features_test, language_encoding_model)
 
     # Calculate correlations
-    correlations_train = utils.calc_correlation(predictions_train, fmri_train)
-    correlations_test = utils.calc_correlation(predictions_test, fmri_test)
+    correlations_train = OLDutils.calc_correlation(predictions_train, fmri_train)
+    correlations_test = OLDutils.calc_correlation(predictions_test, fmri_test)
 
     # Get mean correlation
     all_correlations = np.stack((correlations_train, correlations_train,
@@ -949,19 +949,19 @@ def withinmodal_vision_model(subject, layer):
     fmri_train11 = fmri_train[3300:]
 
     # Prep data
-    train00_fmri = utils.remove_nan(fmri_train00)
-    train01_fmri = utils.remove_nan(fmri_train01)
-    train02_fmri = utils.remove_nan(fmri_train02)
-    train03_fmri = utils.remove_nan(fmri_train03)
-    train04_fmri = utils.remove_nan(fmri_train04)
-    train05_fmri = utils.remove_nan(fmri_train05)
-    train06_fmri = utils.remove_nan(fmri_train06)
-    train07_fmri = utils.remove_nan(fmri_train07)
-    train08_fmri = utils.remove_nan(fmri_train08)
-    train09_fmri = utils.remove_nan(fmri_train09)
-    train10_fmri = utils.remove_nan(fmri_train10)
-    train11_fmri = utils.remove_nan(fmri_train11)
-    test_fmri = utils.remove_nan(fmri_test)
+    train00_fmri = OLDutils.remove_nan(fmri_train00)
+    train01_fmri = OLDutils.remove_nan(fmri_train01)
+    train02_fmri = OLDutils.remove_nan(fmri_train02)
+    train03_fmri = OLDutils.remove_nan(fmri_train03)
+    train04_fmri = OLDutils.remove_nan(fmri_train04)
+    train05_fmri = OLDutils.remove_nan(fmri_train05)
+    train06_fmri = OLDutils.remove_nan(fmri_train06)
+    train07_fmri = OLDutils.remove_nan(fmri_train07)
+    train08_fmri = OLDutils.remove_nan(fmri_train08)
+    train09_fmri = OLDutils.remove_nan(fmri_train09)
+    train10_fmri = OLDutils.remove_nan(fmri_train10)
+    train11_fmri = OLDutils.remove_nan(fmri_train11)
+    test_fmri = OLDutils.remove_nan(fmri_test)
 
     fmri_arrays = [train00_fmri, train01_fmri, train02_fmri,
                    train03_fmri, train04_fmri, train05_fmri,
@@ -975,9 +975,9 @@ def withinmodal_vision_model(subject, layer):
     # a model on 11 and test using the held out one
     for i in range(len(feature_arrays)):
         print("leaving out run", i)
-        new_feat_arrays = utils.remove_run(feature_arrays, i)
+        new_feat_arrays = OLDutils.remove_run(feature_arrays, i)
         X_train = np.vstack(new_feat_arrays)
-        Y_train = np.vstack(utils.remove_run(fmri_arrays, i))
+        Y_train = np.vstack(OLDutils.remove_run(fmri_arrays, i))
 
         print("X_train shape", X_train.shape)
         # Define cross-validation
@@ -990,12 +990,12 @@ def withinmodal_vision_model(subject, layer):
 
         print(run_onsets)
         n_samples_train = X_train.shape[0]
-        cv = utils.generate_leave_one_run_out(n_samples_train, run_onsets)
+        cv = OLDutils.generate_leave_one_run_out(n_samples_train, run_onsets)
         cv = check_cv(cv)  # cross-validation splitter into a reusable list
 
         # Define the model
         scaler = StandardScaler(with_mean=True, with_std=False)
-        delayer = utils.Delayer(delays=[1, 2, 3, 4])
+        delayer = OLDutils.Delayer(delays=[1, 2, 3, 4])
         backend = set_backend("torch_cuda", on_error="warn")
         print(backend)
         X_train = X_train.astype("float32")
@@ -1043,7 +1043,7 @@ def withinmodal_vision_model(subject, layer):
         # Predict
         Y_pred = np.dot(X_test, average_coef)
 
-        test_correlations = utils.calc_correlation(Y_pred, Y_test)
+        test_correlations = OLDutils.calc_correlation(Y_pred, Y_test)
 
         print("Max correlation:", np.nanmax(test_correlations))
 
