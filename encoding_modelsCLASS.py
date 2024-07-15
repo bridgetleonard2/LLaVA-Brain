@@ -257,13 +257,16 @@ class EncodingModels:
         if self.test_stim_files:
             # In this case we build the full training model
             # and use it to predict data from test_stim_files
+            print("Building encoding model and running predictions")
             self.build()
             self.predict()
             if self.test_stim_files:
                 # In this case we add on to the last step and
                 # calculate correlations between predicted and actual data
+                print("Calculating correlations")
                 self.correlate()
         else:
             # In this case we evaluate the model using leave-one-run-out
             # cross-validation
+            print("Evaluating encoding model")
             self.evaluate()
