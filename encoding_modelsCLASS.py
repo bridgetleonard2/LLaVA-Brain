@@ -304,24 +304,28 @@ class EncodingModels:
                     "Naming convention mismatch between stim_dir and fmri_dir."
                     )
 
-        if test_stim_dir and test_fmri_dir:
+        # Can have just test_stim
+        if test_stim_dir:
             # Prep files
             self.test_stim_files = os.listdir(test_stim_dir)
-            self.test_fmri_files = os.listdir(test_fmri_dir)
+            if test_fmri_dir:
+                # Prep files
+                self.test_fmri_files = os.listdir(test_fmri_dir)
 
-            # Check rules
-            if len(self.test_stim_files) != len(self.test_fmri_files):
-                raise ValueError(
-                    "Length of stim_dir and fmri_dir must be equal.")
-            self.test_stim_files.sort()
-            self.test_fmri_files.sort()
-            # check naming convention
-            for stim, fmri in zip(self.test_stim_files, self.test_fmri_files):
-                if stim.split('_')[1] != fmri.split('_')[1]:
+                # Check rules
+                if len(self.test_stim_files) != len(self.test_fmri_files):
                     raise ValueError(
-                        "Naming convention mismatch between "
-                        "stim_dir and fmri_dir."
-                        )
+                        "Length of stim_dir and fmri_dir must be equal.")
+                self.test_stim_files.sort()
+                self.test_fmri_files.sort()
+                # check naming convention
+                for stim, fmri in zip(self.test_stim_files,
+                                      self.test_fmri_files):
+                    if stim.split('_')[1] != fmri.split('_')[1]:
+                        raise ValueError(
+                            "Naming convention mismatch between "
+                            "stim_dir and fmri_dir."
+                            )
 
     def load_fmri(self):
         self.train_fmri_arrays = []
@@ -332,7 +336,8 @@ class EncodingModels:
             self.train_fmri_arrays.append(fmri_data_clean)
         self.train_fmri_shape = fmri_data.shape
 
-        if self.test_fmri_files:
+        # Only load the test data if test stim provided
+        if self.test_stim_files and self.test_fmri_files:
             self.test_fmri_arrays = []
             for fmri_file in self.test_fmri_files:
                 fmri_path = os.path.join(self.test_fmri_dir, fmri_file)
@@ -487,3 +492,20 @@ class EncodingModels:
             self.mean_correlations = np.nanmean(np.stack((test_correlations)),
                                                 axis=0)
             print("Max correlation:", np.nanmax(self.mean_correlations))
+
+    def encoding_pipeline(self):
+        """The encoding pipeline depends on the kind of data provided."""
+        # Loading features and fmri data will always occur before this
+        if self.test_stim_files:
+            # In this case we build the full training model
+            # and use it to predict data from test_stim_files
+            self.build()
+            self.predict()
+            if self.test_stim_files:
+                # In this case we add on to the last step and
+                # calculate correlations between predicted and actual data
+                self.correlate()
+        else:
+            # In this case we evaluate the model using leave-one-run-out
+            # cross-validation
+            self.evaluate()
