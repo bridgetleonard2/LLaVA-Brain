@@ -8,7 +8,7 @@ import utils
 
 class EncodingModels:
     def __init__(self, train_stim_dir, train_fmri_dir, model_handler,
-                 test_stim_dir=None, test_fmri_dir=None):
+                 test_stim_dir=None, test_fmri_dir=None, features_dir=None):
         """Initialize the EncodingModels class.
         train_stim_dir (str): Path to the directory with training stimuli.
         train_fmri_dir (str): Path to the directory with training fMRI data.
@@ -26,6 +26,7 @@ class EncodingModels:
         self.model_handler = model_handler
         self.test_stim_dir = test_stim_dir
         self.test_fmri_dir = test_fmri_dir
+        self.features_dir = features_dir
 
         # Prep files
         self.train_stim_files = os.listdir(train_stim_dir)
@@ -38,7 +39,9 @@ class EncodingModels:
         self.train_fmri_files.sort()
         # check naming convention
         for stim, fmri in zip(self.train_stim_files, self.train_fmri_files):
-            if stim.split('_')[1] != fmri.split('_')[1]:
+            stim_title = stim.split('_')[1].split('.')[0]
+            fmri_title = fmri.split('_')[1].split('.')[0]
+            if stim_title != fmri_title:
                 raise ValueError(
                     "Naming convention mismatch between stim_dir and fmri_dir."
                     )
@@ -60,7 +63,9 @@ class EncodingModels:
                 # check naming convention
                 for stim, fmri in zip(self.test_stim_files,
                                       self.test_fmri_files):
-                    if stim.split('_')[1] != fmri.split('_')[1]:
+                    stim_title = stim.split('_')[1].split('.')[0]
+                    fmri_title = fmri.split('_')[1].split('.')[0]
+                    if stim_title != fmri_title:
                         raise ValueError(
                             "Naming convention mismatch between "
                             "stim_dir and fmri_dir."
@@ -88,11 +93,18 @@ class EncodingModels:
     def load_features(self):
         self.train_feature_arrays = []
         for stim_file in self.train_stim_files:
-            stim_path = os.path.join(self.train_stim_dir, stim_file)
-            visual_features = visual_featuresCLASS.VisualFeatures(
-                stim_path, self.model_handler)
-            visual_features.load_image()
-            stim_features = visual_features.get_features()
+            try:
+                # load features if they exist
+                feat_file = stim_file.split('.')[0] + '_features.npy'
+                feat_path = os.path.join(self.features_dir, feat_file)
+                stim_features = np.load(feat_path)
+            except FileNotFoundError:
+                stim_path = os.path.join(self.train_stim_dir, stim_file)
+                visual_features = visual_featuresCLASS.VisualFeatures(
+                    stim_path, self.model_handler)
+                visual_features.load_image()
+                stim_features = visual_features.get_features()
+                np.save(feat_path, stim_features)
 
             # Only resample features if dimensions don't match fmri
             if stim_features.shape[0] != self.train_fmri_shape[0]:
@@ -105,11 +117,18 @@ class EncodingModels:
         if self.test_stim_files:
             self.test_feature_arrays = []
             for stim_file in self.test_stim_files:
-                stim_path = os.path.join(self.test_stim_dir, stim_file)
-                visual_features = visual_featuresCLASS.VisualFeatures(
-                    stim_path, self.model_handler)
-                visual_features.load_image()
-                stim_features = visual_features.get_features()
+                try:
+                    # load features if they exist
+                    feat_file = stim_file.split('.')[0] + '_features.npy'
+                    feat_path = os.path.join(self.features_dir, feat_file)
+                    stim_features = np.load(feat_path)
+                except FileNotFoundError:
+                    stim_path = os.path.join(self.test_stim_dir, stim_file)
+                    visual_features = visual_featuresCLASS.VisualFeatures(
+                        stim_path, self.model_handler)
+                    visual_features.load_image()
+                    stim_features = visual_features.get_features()
+                    np.save(feat_path, stim_features)
 
                 # Only resample features if dimensions don't match fmri
                 if stim_features.shape[0] != self.test_fmri_shape[0]:

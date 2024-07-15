@@ -3,3 +3,7 @@ from classes import model_handlerCLASS
 model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)
 model_handler.load_model()
+
+# vision model evaluate to start
+train_stim_dir = "../bridgetower-brain/data/encodingModels_pipeline/train_stim"
+train_fmri_dir = "../bridgetower-brain/data/encodingModels_pipeline/train_fmri"
