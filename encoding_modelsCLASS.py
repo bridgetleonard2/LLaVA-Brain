@@ -81,7 +81,7 @@ class EncodingModels:
         self.train_fmri_shape = fmri_data.shape
 
         # Only load the test data if test stim provided
-        if self.test_stim_files and self.test_fmri_files:
+        if self.test_stim_dir and self.test_fmri_dir:
             self.test_fmri_arrays = []
             for fmri_file in self.test_fmri_files:
                 fmri_path = os.path.join(self.test_fmri_dir, fmri_file)
@@ -114,7 +114,7 @@ class EncodingModels:
                 stim_features_resampled = stim_features
             self.train_feature_arrays.append(stim_features_resampled)
 
-        if self.test_stim_files:
+        if self.test_stim_dir:
             self.test_feature_arrays = []
             for stim_file in self.test_stim_files:
                 try:
