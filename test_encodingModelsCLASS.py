@@ -9,10 +9,10 @@ model_handler.load_model()
 train_stim_dir = "../bridgetower-brain/data/encodingModels_pipeline/train_stim"
 train_fmri_dir = "../bridgetower-brain/data/encodingModels_pipeline/train_fmri"
 
-feature_dir = "results/features"
+feat_dir = "results/features"
 
 encoding_model = encoding_modelsCLASS.EncodingModels(
-    model_handler, train_stim_dir, train_fmri_dir, feature_dir
+    train_stim_dir, train_fmri_dir, model_handler, features_dir=feat_dir
     )
 
 encoding_model.load_fmri()
