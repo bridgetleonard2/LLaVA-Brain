@@ -107,10 +107,6 @@ class EncodingModels:
                 visual_features.get_features()
                 stim_features = visual_features.visualFeatures
 
-                # Check if get_features() returned None
-                if stim_features is None:
-                    logging.error(f"get_features() returned None for {stim_file}")
-
                 np.save(feat_path, stim_features)
 
             # Only resample features if dimensions don't match fmri
@@ -138,6 +134,8 @@ class EncodingModels:
                     np.save(feat_path, stim_features)
 
                 # Only resample features if dimensions don't match fmri
+                print("stim_features.shape", stim_features.shape)
+                print("self.test_fmri_shape", self.test_fmri_shape)
                 if stim_features.shape[0] != self.test_fmri_shape[0]:
                     stim_features_resampled = utils.resample_to_acq(
                         stim_features, self.test_fmri_shape)
