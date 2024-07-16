@@ -104,7 +104,8 @@ class EncodingModels:
                 visual_features = visual_featuresCLASS.VisualFeatures(
                     stim_path, self.model_handler)
                 visual_features.load_image()
-                stim_features = visual_features.get_features()
+                visual_features.get_features()
+                stim_features = visual_features.visualFeatures
 
                 # Check if get_features() returned None
                 if stim_features is None:
