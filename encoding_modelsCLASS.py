@@ -78,7 +78,6 @@ class EncodingModels:
             fmri_data = np.load(fmri_path)
             fmri_data_clean = utils.remove_nan(fmri_data)
             self.train_fmri_arrays.append(fmri_data_clean)
-        self.train_fmri_shape = fmri_data.shape
 
         # Only load the test data if test stim provided
         if self.test_stim_dir and self.test_fmri_dir:
@@ -92,7 +91,7 @@ class EncodingModels:
 
     def load_features(self):
         self.train_feature_arrays = []
-        for stim_file in self.train_stim_files:
+        for i, stim_file in enumerate(self.train_stim_files):
             try:
                 # load features if they exist
                 feat_file = stim_file.split('.')[0] + '_features.npy'
@@ -109,18 +108,19 @@ class EncodingModels:
                 np.save(feat_path, stim_features)
 
             # Only resample features if dimensions don't match fmri
-            print("stim_features.shape[0]", stim_features.shape[0])
-            print("self.train_fmri_shape[0]", self.train_fmri_shape[0])
-            if stim_features.shape[0] != self.train_fmri_shape[0]:
+            fmri_shape = self.train_fmri_arrays[i].shape
+            print("features shape", stim_features.shape[0])
+            print("fmri shape", fmri_shape[0])
+            if stim_features.shape[0] != fmri_shape[0]:
                 stim_features_resampled = utils.resample_to_acq(
-                    stim_features, self.train_fmri_shape)
+                    stim_features, fmri_shape)
             else:
                 stim_features_resampled = stim_features
             self.train_feature_arrays.append(stim_features_resampled)
 
         if self.test_stim_dir:
             self.test_feature_arrays = []
-            for stim_file in self.test_stim_files:
+            for i, stim_file in enumerate(self.test_stim_files):
                 try:
                     # load features if they exist
                     feat_file = stim_file.split('.')[0] + '_features.npy'
@@ -135,9 +135,10 @@ class EncodingModels:
                     np.save(feat_path, stim_features)
 
                 # Only resample features if dimensions don't match fmri
-                if stim_features.shape[0] != self.test_fmri_shape[0]:
+                fmri_shape = self.test_fmri_arrays[i].shape
+                if stim_features.shape[0] != fmri_shape[0]:
                     stim_features_resampled = utils.resample_to_acq(
-                        stim_features, self.test_fmri_shape)
+                        stim_features, fmri_shape)
                 else:
                     stim_features_resampled = stim_features
                 self.test_feature_arrays.append(stim_features_resampled)
