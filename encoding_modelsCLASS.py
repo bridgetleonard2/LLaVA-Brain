@@ -2,6 +2,7 @@ import os
 import numpy as np
 from classes import visual_featuresCLASS
 from sklearn import set_config
+import logging
 
 import utils
 
@@ -104,6 +105,11 @@ class EncodingModels:
                     stim_path, self.model_handler)
                 visual_features.load_image()
                 stim_features = visual_features.get_features()
+
+                # Check if get_features() returned None
+                if stim_features is None:
+                    logging.error(f"get_features() returned None for {stim_file}")
+
                 np.save(feat_path, stim_features)
 
             # Only resample features if dimensions don't match fmri
