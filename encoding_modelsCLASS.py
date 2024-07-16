@@ -22,7 +22,7 @@ class EncodingModels:
 
         Same rules apply to test data if provided."""
         self.train_stim_dir = train_stim_dir
-        self.fmri_dir = train_fmri_dir
+        self.train_fmri_dir = train_fmri_dir
         self.model_handler = model_handler
         self.test_stim_dir = test_stim_dir
         self.test_fmri_dir = test_fmri_dir
