@@ -2,7 +2,6 @@ import os
 import numpy as np
 from classes import visual_featuresCLASS
 from sklearn import set_config
-import logging
 
 import utils
 
@@ -110,6 +109,8 @@ class EncodingModels:
                 np.save(feat_path, stim_features)
 
             # Only resample features if dimensions don't match fmri
+            print("stim_features.shape[0]", stim_features.shape[0])
+            print("self.train_fmri_shape[0]", self.train_fmri_shape[0])
             if stim_features.shape[0] != self.train_fmri_shape[0]:
                 stim_features_resampled = utils.resample_to_acq(
                     stim_features, self.train_fmri_shape)
@@ -134,8 +135,6 @@ class EncodingModels:
                     np.save(feat_path, stim_features)
 
                 # Only resample features if dimensions don't match fmri
-                print("stim_features.shape", stim_features.shape)
-                print("self.test_fmri_shape", self.test_fmri_shape)
                 if stim_features.shape[0] != self.test_fmri_shape[0]:
                     stim_features_resampled = utils.resample_to_acq(
                         stim_features, self.test_fmri_shape)
