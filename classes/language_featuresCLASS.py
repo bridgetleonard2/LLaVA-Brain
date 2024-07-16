@@ -1,52 +1,88 @@
 import numpy as np
 import torch  # type: ignore
-import h5py  # type: ignore
+import re
 
 # Progress bar
 from tqdm import tqdm
 
 
-def load_hdf5_array(file_name, key=None, slice=slice(0, None)):
-    """Function to load data from an hdf file.
+def textgrid_to_array(textgrid):
+    """Function to load transcript from textgrid into a list.
 
     Parameters
     ----------
-    file_name: string
-        hdf5 file name.
-    key: string
-        Key name to load. If not provided, all keys will be loaded.
-    slice: slice, or tuple of slices
-        Load only a slice of the hdf5 array. It will load `array[slice]`.
-        Use a tuple of slices to get a slice in multiple dimensions.
+    textgrid: string
+        TextGrid file name.
 
     Returns
     -------
-    result : array or dictionary
-        Array, or dictionary of arrays (if `key` is None).
+    full_transcript : Array
+        Array with each word in the story.
     """
-    with h5py.File(file_name, mode='r') as hf:
-        if key is None:
-            data = dict()
-            for k in hf.keys():
-                data[k] = hf[k][slice]
-            return data
-        else:
-            return hf[key][slice]
+    if textgrid == 'data/raw_stimuli/textgrids/stimuli/legacy.TextGrid':
+        with open(textgrid, 'r')as file:
+            data = file.readlines()
+
+        full_transcript = []
+        # Important info starts at line 5
+        for line in data[5:]:
+            if line.startswith('2'):
+                index = data.index(line)
+                word = re.search(r'"([^"]*)"', data[index+1].strip()).group(1)
+                full_transcript.append(word)
+    elif textgrid == 'data/raw_stimuli/textgrids/stimuli/life.TextGrid':
+        with open(textgrid, 'r') as file:
+            data = file.readlines()
+
+        full_transcript = []
+        for line in data:
+            if "word" in line:
+                index = data.index(line)
+                words = data[index+6:]  # this is where first word starts
+
+        for i, word in enumerate(words):
+            if i % 3 == 0:
+                word = re.search(r'"([^"]*)"', word.strip()).group(1)
+                full_transcript.append(word)
+    else:
+        with open(textgrid, 'r') as file:
+            data = file.readlines()
+
+        # Important info starts at line 8
+        for line in data[8:]:
+            # We only want item [2] info because those are the words instead
+            # of phonemes
+            if "item [2]" in line:
+                index = data.index(line)
+
+        summary_info = [line.strip() for line in data[index+1:index+6]]
+        print(summary_info)
+
+        word_script = data[index+6:]
+        full_transcript = []
+        for line in word_script:
+            if "intervals" in line:
+                # keep track of which interval we're on
+                ind = word_script.index(line)
+                word = re.search(r'"([^"]*)"',
+                                 word_script[ind+3].strip()).group(1)
+                full_transcript.append(word)
+
+    return np.array(full_transcript)
 
 
-class VisualFeatures:
+class LanguageFeatures:
     def __init__(self, path, ModelHandler):
         self.path = path
         self.data_type = path.split('.')[-1]
         self.ModelHandler = ModelHandler
 
-    def load_image(self):
-        if self.data_type == "hdf":
-            self.stim_data = load_hdf5_array(self.path,
-                                             key='stimuli')
-            if self.ModelHandler.model_name == 'llava':
-                # convert list to np.array
-                self.stim_data = np.array(self.stim_data)
+    def load_text(self):
+        if self.data_type == "TextGrid":
+            self.stim_data = textgrid_to_array(self.path)
+            # if self.ModelHandler.model_name == 'llava':
+            #     # convert list to np.array
+            #     self.stim_data = np.array(self.stim_data)
 
     def get_features(self, batch_size=50, n=30):
         prompt = ""
@@ -54,7 +90,7 @@ class VisualFeatures:
         if self.ModelHandler.model_name == 'llava':
             # Follow prompt format:
             formatted_prompt = (
-                f"system\nUnderstand this image.\nuser\n<image>\n"
+                f"system\nUnderstand this story.\nuser\n<image>\n"
                 f"{prompt}\nassistant\n"
             )
         else:
