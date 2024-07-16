@@ -98,7 +98,7 @@ class EncodingModels:
                 # load features if they exist
                 feat_file = stim_file.split('.')[0] + '_features.npy'
                 feat_path = os.path.join(self.features_dir, feat_file)
-                stim_features = np.load(feat_path)
+                stim_features = np.load(feat_path, allow_pickle=True)
             except FileNotFoundError:
                 stim_path = os.path.join(self.train_stim_dir, stim_file)
                 visual_features = visual_featuresCLASS.VisualFeatures(
@@ -127,7 +127,7 @@ class EncodingModels:
                     # load features if they exist
                     feat_file = stim_file.split('.')[0] + '_features.npy'
                     feat_path = os.path.join(self.features_dir, feat_file)
-                    stim_features = np.load(feat_path)
+                    stim_features = np.load(feat_path, allow_pickle=True)
                 except FileNotFoundError:
                     stim_path = os.path.join(self.test_stim_dir, stim_file)
                     visual_features = visual_featuresCLASS.VisualFeatures(
