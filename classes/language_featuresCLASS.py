@@ -84,19 +84,36 @@ class LanguageFeatures:
             #     # convert list to np.array
             #     self.stim_data = np.array(self.stim_data)
 
-    def get_features(self, batch_size=50, n=30):
-        prompt = ""
+    def get_features(self, batch_size=50, context=20):
+        words_with_context = []
+        for i, word in enumerate(self.stim_data):
+            # if one of first 20 words, just pad with all the words before it
+            if i < context:
+                chunk = ' '.join(self.stim_data[:(i+context)])
+            # if one of last 20 words, just pad with all the words after it
+            elif i > len(self.stim_data) - context:
+                chunk = ' '.join(self.stim_data[(i-context):])
+            else:
+                chunk = ' '.join(self.stim_data[(i-context):(i+context)])
+            words_with_context.append(chunk)
+
         # prepare images for model
         if self.ModelHandler.model_name == 'llava':
             # Follow prompt format:
-            formatted_prompt = (
-                f"system\nUnderstand this story.\nuser\n<image>\n"
-                f"{prompt}\nassistant\n"
-            )
+            formatted_prompt = [
+                (f"system\nUnderstand this story.\nuser\n<image>"
+                 f"\n{prompt}\nassistant\n")
+                for prompt in words_with_context
+            ]
         else:
-            formatted_prompt = prompt
-        # text is just blank strings for each of the items in stim_data
-        text = [formatted_prompt for i in range(self.stim_data.shape[0])]
+            formatted_prompt = words_with_context
+
+        # Create a numpy array filled with gray values (128 in this case)
+        # THis will act as tthe zero image input***
+        gray_value = 128
+        image_array = np.full((512, 512, 3), gray_value, dtype=np.uint8)
+
+        images = [image_array for i in range(len(words_with_context))]
 
         # Set number of batches to run through
         # (based on memory constraints vs time benefit)
@@ -109,8 +126,8 @@ class LanguageFeatures:
             batch_start = batch_idx * batch_size
             batch_end = min(batch_start + batch_size, self.stim_data.shape[0])
 
-            batch_images = self.stim_data[batch_start:batch_end]
-            batch_text = text[batch_start:batch_end]
+            batch_images = images[batch_start:batch_end]
+            batch_text = formatted_prompt[batch_start:batch_end]
 
             model_inputs = self.ModelHandler.processor(images=batch_images,
                                                        text=batch_text,
@@ -124,37 +141,9 @@ class LanguageFeatures:
 
         all_tensors = self.ModelHandler.features['layer']
 
-        # Now features will be a dict with one key: 'layer'
-        # tensors = self.ModelHandler.features['layer']
-        print(f"Captured {len(all_tensors)} tensors")
+        all_tensors_numpy = [tensor.detach().cpu().numpy() for
+                             tensor in all_tensors]
 
-        average_tensors = []
-        # for every n tensor, take the average
-        for i in tqdm(range(0, len(all_tensors), n)):
-            try:
-                n_tensors = all_tensors[i:i+10]
-                average_tensors.append(torch.mean(torch.stack(n_tensors),
-                                                  dim=0))
-            except Exception as e:
-                print(f"Failed to average tensors: {e}")
-                n_tensors = all_tensors[i:i+10]
-
-                # size of first tensor
-                fst_size = all_tensors[0].size
-
-                if not all(tensor.size() == fst_size for tensor in n_tensors):
-                    print("tensor size mismatch")
-                    # find tensor with wrong size
-                    for j, tensor in enumerate(n_tensors):
-                        if tensor.size() != fst_size:
-                            print(f"Removing tensor: {tensor.size()} from avg")
-                            n_tensors.pop(j)
-                    average_tensors.append(torch.mean(torch.stack(n_tensors),
-                                                      dim=0))
-
-        average_tensors_numpy = [tensor.detach().cpu().numpy() for
-                                 tensor in average_tensors]
-
-        self.visualFeatures = np.array(average_tensors_numpy)
+        self.languageFeatures = np.array(all_tensors_numpy)
 
         self.ModelHandler.reset_features()

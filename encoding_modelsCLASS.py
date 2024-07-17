@@ -259,13 +259,13 @@ class EncodingModels:
     def encoding_pipeline(self):
         """The encoding pipeline depends on the kind of data provided."""
         # Loading features and fmri data will always occur before this
-        if self.test_stim_files:
+        if self.train_stim_dir:
             # In this case we build the full training model
             # and use it to predict data from test_stim_files
             print("Building encoding model and running predictions")
             self.build()
             self.predict()
-            if self.test_stim_files:
+            if self.test_stim_dir:
                 # In this case we add on to the last step and
                 # calculate correlations between predicted and actual data
                 print("Calculating correlations")
