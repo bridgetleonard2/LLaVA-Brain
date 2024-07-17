@@ -86,6 +86,14 @@ def generate_leave_one_run_out(n_samples, run_onsets, random_state=None,
         train = np.hstack(
             [runs[jj] for jj in range(n_runs) if jj not in val_runs])
         val = np.hstack([runs[jj] for jj in range(n_runs) if jj in val_runs])
+
+        # Debugging output
+        print(f"Generated split: train length = {len(train)},"
+              "val length = {len(val)}")
+        if len(train) == 0 or len(val) == 0:
+            raise ValueError(
+                "Generated split has no samples in either train or val.")
+
         yield train, val
 
 
