@@ -226,7 +226,8 @@ def set_pipeline(feature_arrays):
         current_index = next_index
 
     print(run_onsets)
-    n_samples_train = len(feature_arrays)
+    print('n_samples', np.vstack(feature_arrays).shape[0])
+    n_samples_train = np.vstack(feature_arrays).shape[0]
     cv = generate_leave_one_run_out(n_samples_train, run_onsets)
     cv = check_cv(cv)  # cross-validation splitter into a reusable list
 
