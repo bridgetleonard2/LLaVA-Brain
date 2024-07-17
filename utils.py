@@ -58,23 +58,17 @@ def generate_leave_one_run_out(n_samples, run_onsets, random_state=None,
     val : array of int of shape (n_samples_val, )
         Validation set indices.
     """
-    print("Entered generate_leave_one_run_out function")
-    print("num_samples:", n_samples)
-    print("run_onsets:", run_onsets)
     random_state = check_random_state(random_state)
 
     n_runs = len(run_onsets)
-    print("Number of runs:", n_runs)
 
     # Generate permutations of the runs
     all_val_runs = np.array(
         [random_state.permutation(n_runs) for _ in range(n_runs_out)]
     )
-    print("All validation runs permutations:", all_val_runs)
 
     all_samples = np.arange(n_samples)
     runs = np.split(all_samples, run_onsets[1:])
-    print("Runs split:", [len(run) for run in runs])
 
     # Ensure no runs have zero samples
     if any(len(run) == 0 for run in runs):
@@ -88,8 +82,6 @@ def generate_leave_one_run_out(n_samples, run_onsets, random_state=None,
         val = np.hstack([runs[jj] for jj in range(n_runs) if jj in val_runs])
 
         # Debugging output
-        print(f"Generated split: train length = {len(train)},"
-              f"val length = {len(val)}")
         if len(train) == 0 or len(val) == 0:
             raise ValueError(
                 "Generated split has no samples in either train or val.")
@@ -219,7 +211,6 @@ def set_pipeline(feature_arrays):
         current_index = next_index
 
     print(run_onsets)
-    print('n_samples', np.vstack(feature_arrays).shape[0])
     n_samples_train = np.vstack(feature_arrays).shape[0]
     cv = generate_leave_one_run_out(n_samples_train, run_onsets)
     cv = check_cv(cv)  # cross-validation splitter into a reusable list

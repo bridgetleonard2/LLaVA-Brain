@@ -232,6 +232,12 @@ class EncodingModels:
         pipeline
 
         X_train = X_train.astype(np.float32)
+
+        # if X_train > 2 dimensions, average across the second dimension
+        if len(X_train.shape) > 2:
+            X_train = np.mean(X_train, axis=1)
+            print("X_train shape", X_train.shape)
+
         _ = pipeline.fit(X_train, Y_train)
 
         coef = pipeline[-1].coef_
@@ -255,6 +261,12 @@ class EncodingModels:
         self.predictions = []
         for i in range(len(self.test_feature_arrays)):
             X_test = self.test_feature_arrays[i]
+
+            # if X_test > 2 dimensions, average across the second dimension
+            if len(X_test.shape) > 2:
+                X_test = np.mean(X_test, axis=1)
+                print("X_test shape", X_test.shape)
+
             Y_pred = np.dot(X_test, self.encoding_model)
             self.predictions.append(Y_pred)
 
@@ -284,8 +296,32 @@ class EncodingModels:
                 # calculate correlations between predicted and actual data
                 print("Calculating correlations")
                 self.correlate()
+
+                # Output is the correlations
+                self.output = self.mean_correlations
+
+                # save output
+                np.save(
+                    (f"results/{self.model_handler.layer}"
+                     "/pred_correlations.npy"),
+                    self.output)
+            else:
+                # Output is mean predictions
+                self.output = np.array(self.predictions).mean(axis=0)
+
+                # save output
+                np.save(f"results/{self.model_handler.layer}/predictions.npy",
+                        self.output)
         else:
             # In this case we evaluate the model using leave-one-run-out
             # cross-validation
             print("Evaluating encoding model")
             self.evaluate()
+
+            # Output is the average correlations
+            self.output = np.array(self.correlations).mean(axis=0)
+
+            # save output
+            np.save(
+                f"results/{self.model_handler.layer}/eval_correlations.npy",
+                self.output)
