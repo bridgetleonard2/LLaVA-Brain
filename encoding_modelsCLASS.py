@@ -87,7 +87,6 @@ class EncodingModels:
                 fmri_data = np.load(fmri_path)
                 fmri_data_clean = utils.remove_nan(fmri_data)
                 self.test_fmri_arrays.append(fmri_data_clean)
-            self.test_fmri_shape = fmri_data.shape
 
     def load_features(self):
         self.train_feature_arrays = []
@@ -199,8 +198,8 @@ class EncodingModels:
         """Build the encoding model."""
         if alignment:
             # replace with actual later***
-            align_matrix = np.random.randn(self.train_fmri_shape[1],
-                                           self.test_fmri_shape[1])
+            align_matrix = np.random.randn(768,
+                                           81111)
             transformed_features = []
             for i in range(len(self.train_feature_arrays)):
                 transformed_features.append(np.dot(
@@ -209,10 +208,10 @@ class EncodingModels:
             self.train_feature_arrays = transformed_features
 
         print("Building encoding model using all training data")
-        X_train = np.vstack(self.feature_arrays)
-        Y_train = np.vstack(self.fmri_arrays)
+        X_train = np.vstack(self.train_feature_arrays)
+        Y_train = np.vstack(self.train_fmri_arrays)
 
-        pipeline, backend = utils.set_pipeline(self.feature_arrays)
+        pipeline, backend = utils.set_pipeline(self.train_feature_arrays)
 
         set_config(display='diagram')  # requires scikit-learn 0.23
         pipeline
@@ -259,13 +258,13 @@ class EncodingModels:
     def encoding_pipeline(self):
         """The encoding pipeline depends on the kind of data provided."""
         # Loading features and fmri data will always occur before this
-        if self.train_stim_dir:
+        if self.test_stim_dir:
             # In this case we build the full training model
             # and use it to predict data from test_stim_files
             print("Building encoding model and running predictions")
             self.build()
             self.predict()
-            if self.test_stim_dir:
+            if self.test_fmri_dir:
                 # In this case we add on to the last step and
                 # calculate correlations between predicted and actual data
                 print("Calculating correlations")
