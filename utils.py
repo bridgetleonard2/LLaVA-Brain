@@ -58,6 +58,8 @@ def generate_leave_one_run_out(n_samples, run_onsets, random_state=None,
     val : array of int of shape (n_samples_val, )
         Validation set indices.
     """
+    print("num_samples:", n_samples)
+    print("run_onsets:", run_onsets)
     random_state = check_random_state(random_state)
 
     n_runs = len(run_onsets)
@@ -89,7 +91,7 @@ def generate_leave_one_run_out(n_samples, run_onsets, random_state=None,
 
         # Debugging output
         print(f"Generated split: train length = {len(train)},"
-              "val length = {len(val)}")
+              f"val length = {len(val)}")
         if len(train) == 0 or len(val) == 0:
             raise ValueError(
                 "Generated split has no samples in either train or val.")
