@@ -61,14 +61,22 @@ def generate_leave_one_run_out(n_samples, run_onsets, random_state=None,
     random_state = check_random_state(random_state)
 
     n_runs = len(run_onsets)
-    # With permutations, we are sure that all runs are used as validation runs.
-    # However here for n_runs_out > 1, a run can be chosen twice as validation
-    # in the same split.
+
+    # Ensure run_onsets does not include any repeated index, nor the last index
+    if len(set(run_onsets)) != len(run_onsets):
+        raise ValueError("run_onsets includes repeated indices.")
+    if run_onsets[-1] != n_samples:
+        run_onsets.append(n_samples)
+
+    # Generate permutations of the runs
     all_val_runs = np.array(
-        [random_state.permutation(n_runs) for _ in range(n_runs_out)])
+        [random_state.permutation(n_runs) for _ in range(n_runs_out)]
+    )
 
     all_samples = np.arange(n_samples)
     runs = np.split(all_samples, run_onsets[1:])
+
+    # Ensure no runs have zero samples
     if any(len(run) == 0 for run in runs):
         raise ValueError("Some runs have no samples. Check that run_onsets "
                          "does not include any repeated index, nor the last "
