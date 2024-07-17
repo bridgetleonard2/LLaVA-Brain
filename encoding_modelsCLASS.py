@@ -162,10 +162,10 @@ class EncodingModels:
 
             X_train = X_train.astype(np.float32)
 
-            # if X_train > 2 dimensions, flatten all but the first
+            # if X_train > 2 dimensions, average across the second dimension
             if len(X_train.shape) > 2:
-                X_train = np.reshape(X_train, (X_train.shape[0], -1))
-                print("X_train reshaped", X_train.shape)
+                X_train = np.mean(X_train, axis=1)
+                print("X_train shape", X_train.shape)
 
             _ = pipeline.fit(X_train, Y_train)
 
