@@ -190,11 +190,16 @@ class EncodingModels:
             # Test the model
             X_test = self.train_feature_arrays[i]
             Y_test = self.train_fmri_arrays[i]
+            print("X_test shape:", X_test.shape)
+            print("Y_test shape:", Y_test.shape)
 
             # Predict
             Y_pred = np.dot(X_test, average_coef)
+            print("Y_pred shape:", Y_pred.shape)
 
+            # Calculate correlation
             test_correlations = utils.calc_correlation(Y_pred, Y_test)
+            print("Test correlations calculated")
 
             print("Max correlation:", np.nanmax(test_correlations))
 
