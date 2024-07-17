@@ -148,11 +148,11 @@ class EncodingModels:
         cross-validation."""
         self.correlations = []
 
-        for i in range(len(self.feature_arrays)):
+        for i in range(len(self.train_feature_arrays)):
             print("leaving out run", i)
-            new_feat_arrays = utils.remove_run(self.feature_arrays, i)
+            new_feat_arrays = utils.remove_run(self.train_feature_arrays, i)
             X_train = np.vstack(new_feat_arrays)
-            Y_train = np.vstack(utils.remove_run(self.fmri_arrays, i))
+            Y_train = np.vstack(utils.remove_run(self.train_fmri_arrays, i))
 
             print("X_train shape", X_train.shape)
 
@@ -183,8 +183,8 @@ class EncodingModels:
             del coef_per_delay
 
             # Test the model
-            X_test = self.feature_arrays[i]
-            Y_test = self.fmri_arrays[i]
+            X_test = self.train_feature_arrays[i]
+            Y_test = self.train_fmri_arrays[i]
 
             # Predict
             Y_pred = np.dot(X_test, average_coef)
