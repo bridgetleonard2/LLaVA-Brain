@@ -190,11 +190,15 @@ class EncodingModels:
             # Test the model
             X_test = self.train_feature_arrays[i]
             Y_test = self.train_fmri_arrays[i]
-            print("X_test shape:", X_test.shape)
+
+            # if X_test > 2 dimensions, average across the second dimension
+            if len(X_test.shape) > 2:
+                X_test = np.mean(X_test, axis=1)
+                print("X_test shape", X_test.shape)
             print("Y_test shape:", Y_test.shape)
 
             # Predict
-            Y_pred = np.dot(X_test, average_coef)
+            Y_pred = np.matmul(X_test, average_coef)
             print("Y_pred shape:", Y_pred.shape)
 
             # Calculate correlation
