@@ -66,13 +66,6 @@ def generate_leave_one_run_out(n_samples, run_onsets, random_state=None,
     n_runs = len(run_onsets)
     print("Number of runs:", n_runs)
 
-    # Ensure run_onsets does not include any repeated index, nor the last index
-    if len(set(run_onsets)) != len(run_onsets):
-        raise ValueError("run_onsets includes repeated indices.")
-    if run_onsets[-1] != n_samples:
-        run_onsets.append(n_samples)
-        print("Updated run_onsets with n_samples:", run_onsets)
-
     # Generate permutations of the runs
     all_val_runs = np.array(
         [random_state.permutation(n_runs) for _ in range(n_runs_out)]
