@@ -37,6 +37,7 @@ class ModelHandler:
 
         # select layer
         self.layer = self.model.multi_modal_projector.linear_2
+        self.layer_name = 'multi_modal_projector.linear_2'
 
         self.processor = self.processor.from_pretrained(self.model_id)
 

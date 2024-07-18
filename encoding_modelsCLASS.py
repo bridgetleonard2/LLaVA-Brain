@@ -284,6 +284,12 @@ class EncodingModels:
 
     def encoding_pipeline(self):
         """The encoding pipeline depends on the kind of data provided."""
+        # Define the directory and file name
+        directory = f'results/{self.model_handler.layer_name}'
+
+        # Create the directory if it doesn't exist
+        os.makedirs(directory, exist_ok=True)
+
         # Loading features and fmri data will always occur before this
         if self.test_stim_dir:
             # In this case we build the full training model
@@ -300,18 +306,20 @@ class EncodingModels:
                 # Output is the correlations
                 self.output = self.mean_correlations
 
+                file_name = 'pred_correlations.npy'
+                file_path = os.path.join(directory, file_name)
+
                 # save output
-                np.save(
-                    (f"results/{self.model_handler.layer}"
-                     "/pred_correlations.npy"),
-                    self.output)
+                np.save(file_path, self.output)
             else:
                 # Output is mean predictions
                 self.output = np.array(self.predictions).mean(axis=0)
 
+                file_name = 'predictions.npy'
+                file_path = os.path.join(directory, file_name)
+
                 # save output
-                np.save(f"results/{self.model_handler.layer}/predictions.npy",
-                        self.output)
+                np.save(file_path, self.output)
         else:
             # In this case we evaluate the model using leave-one-run-out
             # cross-validation
@@ -321,7 +329,8 @@ class EncodingModels:
             # Output is the average correlations
             self.output = np.array(self.correlations).mean(axis=0)
 
+            file_name = 'eval_correlations.npy'
+            file_path = os.path.join(directory, file_name)
+
             # save output
-            np.save(
-                f"results/{self.model_handler.layer}/eval_correlations.npy",
-                self.output)
+            np.save(file_path, self.output)
