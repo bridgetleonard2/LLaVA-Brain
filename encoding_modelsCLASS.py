@@ -167,7 +167,7 @@ class EncodingModels:
                             stim_features, fmri_shape)
                     else:
                         stim_features_resampled = stim_features
-                    self.test_feature_arrays.append(stim_features_resampled)
+            self.test_feature_arrays.append(stim_features_resampled)
 
     def evaluate(self):
         """Evaluate the encoding models using leave-one-run-out
@@ -340,8 +340,7 @@ class EncodingModels:
                 np.save(file_path, self.output)
             else:
                 # Output is mean predictions
-                num_zeros_pred = np.count_nonzero(np.array(self.predictions) == 0)
-                print(f"Number of zero predictions: {num_zeros_pred}")
+                print(len(self.predictions))
 
                 self.output = np.nanmean(np.array(self.predictions), axis=0)
 
