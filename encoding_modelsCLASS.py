@@ -167,7 +167,7 @@ class EncodingModels:
                             stim_features, fmri_shape)
                     else:
                         stim_features_resampled = stim_features
-            self.test_feature_arrays.append(stim_features_resampled)
+                self.test_feature_arrays.append(stim_features_resampled)
 
     def evaluate(self):
         """Evaluate the encoding models using leave-one-run-out
