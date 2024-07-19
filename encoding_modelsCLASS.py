@@ -1,14 +1,16 @@
 import os
 import numpy as np
 from classes import visual_featuresCLASS
+from classes import language_featuresCLASS
 from sklearn import set_config
 
 import utils
 
 
 class EncodingModels:
-    def __init__(self, train_stim_dir, train_fmri_dir, model_handler,
-                 test_stim_dir=None, test_fmri_dir=None, features_dir=None):
+    def __init__(self, model_handler, train_stim_dir, train_fmri_dir,
+                 train_stim_type, test_stim_dir=None, test_fmri_dir=None,
+                 test_stim_type=None, features_dir=None):
         """Initialize the EncodingModels class.
         train_stim_dir (str): Path to the directory with training stimuli.
         train_fmri_dir (str): Path to the directory with training fMRI data.
@@ -17,15 +19,18 @@ class EncodingModels:
         Order of files in train_fmri_dir and train_fmri_dir must match.
 
         Naming convention for files:
-        train_stim_dir: 'stim_01', 'stim_02', ...
-        train_fmri_dir: 'fmri_01', 'fmri_02', ...
+        Stim and fmri have same name but different types (name.npy, name.hdf5)
 
         Same rules apply to test data if provided."""
+        self.model_handler = model_handler
         self.train_stim_dir = train_stim_dir
         self.train_fmri_dir = train_fmri_dir
-        self.model_handler = model_handler
+        self.train_stim_type = train_stim_type
+
         self.test_stim_dir = test_stim_dir
         self.test_fmri_dir = test_fmri_dir
+        self.test_stim_type = test_stim_type
+
         self.features_dir = features_dir
 
         # Prep files
@@ -39,8 +44,8 @@ class EncodingModels:
         self.train_fmri_files.sort()
         # check naming convention
         for stim, fmri in zip(self.train_stim_files, self.train_fmri_files):
-            stim_title = stim.split('_')[1].split('.')[0]
-            fmri_title = fmri.split('_')[1].split('.')[0]
+            stim_title = stim.split('.')[0]
+            fmri_title = fmri.split('.')[0]
             if stim_title != fmri_title:
                 raise ValueError(
                     "Naming convention mismatch between stim_dir and fmri_dir."
@@ -63,8 +68,8 @@ class EncodingModels:
                 # check naming convention
                 for stim, fmri in zip(self.test_stim_files,
                                       self.test_fmri_files):
-                    stim_title = stim.split('_')[1].split('.')[0]
-                    fmri_title = fmri.split('_')[1].split('.')[0]
+                    stim_title = stim.split('.')[0]
+                    fmri_title = fmri.split('.')[0]
                     if stim_title != fmri_title:
                         raise ValueError(
                             "Naming convention mismatch between "
@@ -98,11 +103,20 @@ class EncodingModels:
                 stim_features = np.load(feat_path, allow_pickle=True)
             except FileNotFoundError:
                 stim_path = os.path.join(self.train_stim_dir, stim_file)
-                visual_features = visual_featuresCLASS.VisualFeatures(
-                    stim_path, self.model_handler)
-                visual_features.load_image()
-                visual_features.get_features()
-                stim_features = visual_features.visualFeatures
+                if self.train_stim_type == "visual":
+                    visual_features = visual_featuresCLASS.VisualFeatures(
+                        stim_path, self.model_handler)
+                    visual_features.load_image()
+                    visual_features.get_features()
+                    stim_features = visual_features.visualFeatures
+                elif self.train_stim_type == "language":
+                    language_features = language_featuresCLASS.LanguageFeatures(
+                        stim_path, self.model_handler)
+                    language_features.load_text()
+                    language_features.get_features()
+                    stim_features = (
+                        language_features.languageFeatures
+                    )
 
                 np.save(feat_path, stim_features)
 
