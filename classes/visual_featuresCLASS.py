@@ -131,6 +131,5 @@ class VisualFeatures:
                                  tensor in average_tensors]
 
         self.visualFeatures = np.array(average_tensors_numpy)
-        print(f"Visual features shape: {self.visualFeatures.shape}")
 
         self.ModelHandler.reset_features()

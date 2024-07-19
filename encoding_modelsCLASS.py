@@ -140,7 +140,6 @@ class EncodingModels:
                     feat_file = stim_file.split('.')[0] + '_features.npy'
                     feat_path = os.path.join(self.features_dir, feat_file)
                     test_stim_features = np.load(feat_path, allow_pickle=True)
-                    print("Features loaded", test_stim_features.shape)
                 except FileNotFoundError:
                     stim_path = os.path.join(self.test_stim_dir, stim_file)
                     if self.test_stim_type == "visual":
@@ -163,7 +162,6 @@ class EncodingModels:
 
                 # Only resample features if dimensions don't match fmri
                 if self.test_fmri_dir:
-                    print("test fmri dir exists")
                     fmri_shape = self.test_fmri_arrays[i].shape
                     if test_stim_features.shape[0] != fmri_shape[0]:
                         test_stim_features_resampled = utils.resample_to_acq(
@@ -173,7 +171,6 @@ class EncodingModels:
                 else:
                     test_stim_features_resampled = test_stim_features
                 self.test_feature_arrays.append(test_stim_features_resampled)
-            print("Features loaded", np.array(self.test_feature_arrays).shape)
 
     def evaluate(self):
         """Evaluate the encoding models using leave-one-run-out
@@ -296,13 +293,11 @@ class EncodingModels:
             X_test = self.test_feature_arrays[i]
 
             # if X_test > 2 dimensions, average across the second dimension
-            print("X_test shape", X_test.shape)
             if len(X_test.shape) > 2:
                 X_test = np.mean(X_test, axis=1)
                 print("X_test shape", X_test.shape)
 
             Y_pred = np.dot(X_test, self.encoding_model)
-            print("Y_pred shape:", Y_pred.shape)
             self.predictions.append(Y_pred)
 
     def correlate(self):
@@ -348,8 +343,12 @@ class EncodingModels:
                 np.save(file_path, self.output)
             else:
                 # Output is mean predictions
-                print("before average shape", np.array(self.predictions).shape)
+                print("before average shape [n_inputs, len_inputs, features]",
+                      np.array(self.predictions).shape)
                 self.output = np.nanmean(np.array(self.predictions), axis=0)
+                # Since predictions are still over time,
+                # average over time (first dim)
+                self.output = np.nanmean(self.output, axis=0)
                 print("after average shape", self.output.shape)
 
                 file_name = 'predictions.npy'
