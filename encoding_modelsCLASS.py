@@ -167,6 +167,8 @@ class EncodingModels:
                             stim_features, fmri_shape)
                     else:
                         stim_features_resampled = stim_features
+                else:
+                    stim_features_resampled = stim_features
                 self.test_feature_arrays.append(stim_features_resampled)
 
     def evaluate(self):
@@ -290,6 +292,7 @@ class EncodingModels:
             X_test = self.test_feature_arrays[i]
 
             # if X_test > 2 dimensions, average across the second dimension
+            print("X_test shape", X_test.shape)
             if len(X_test.shape) > 2:
                 X_test = np.mean(X_test, axis=1)
                 print("X_test shape", X_test.shape)
