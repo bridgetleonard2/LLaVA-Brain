@@ -295,6 +295,7 @@ class EncodingModels:
                 print("X_test shape", X_test.shape)
 
             Y_pred = np.dot(X_test, self.encoding_model)
+            print("Y_pred shape:", Y_pred.shape)
             self.predictions.append(Y_pred)
 
     def correlate(self):
@@ -340,9 +341,9 @@ class EncodingModels:
                 np.save(file_path, self.output)
             else:
                 # Output is mean predictions
-                print(len(self.predictions))
-
+                print("before average shape", np.array(self.predictions).shape)
                 self.output = np.nanmean(np.array(self.predictions), axis=0)
+                print("after average shape", self.output.shape)
 
                 file_name = 'predictions.npy'
                 file_path = os.path.join(directory, file_name)
