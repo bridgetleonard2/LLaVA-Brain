@@ -148,6 +148,7 @@ class EncodingModels:
                             stim_path, self.model_handler)
                         visual_features.load_image()
                         visual_features.get_features()
+                        test_stim_features = visual_features.visualFeatures
                     elif self.test_stim_type == "language":
                         language_features = (
                             language_featuresCLASS.LanguageFeatures(
