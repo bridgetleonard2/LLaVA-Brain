@@ -160,13 +160,14 @@ class EncodingModels:
                     np.save(feat_path, stim_features)
 
                 # Only resample features if dimensions don't match fmri
-                fmri_shape = self.test_fmri_arrays[i].shape
-                if stim_features.shape[0] != fmri_shape[0]:
-                    stim_features_resampled = utils.resample_to_acq(
-                        stim_features, fmri_shape)
-                else:
-                    stim_features_resampled = stim_features
-                self.test_feature_arrays.append(stim_features_resampled)
+                if self.test_fmri_dir:
+                    fmri_shape = self.test_fmri_arrays[i].shape
+                    if stim_features.shape[0] != fmri_shape[0]:
+                        stim_features_resampled = utils.resample_to_acq(
+                            stim_features, fmri_shape)
+                    else:
+                        stim_features_resampled = stim_features
+                    self.test_feature_arrays.append(stim_features_resampled)
 
     def evaluate(self):
         """Evaluate the encoding models using leave-one-run-out
