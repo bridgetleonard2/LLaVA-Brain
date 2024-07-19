@@ -33,7 +33,7 @@ elif test_type == "pred":
 
     train_stim_type = "visual"
 
-    test_stim_dir = f"{data_dir}/face_stim"
+    test_stim_dir = f"{data_dir}/landscape_stim"
 
     feat_dir = "results/features"
 
