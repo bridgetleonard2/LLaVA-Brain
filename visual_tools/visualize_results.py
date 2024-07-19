@@ -16,24 +16,24 @@ def create_flatmap(subject, layer):
     #     except FileNotFoundError:
     #         continue
     try:
-        filepath = f"../results/{layer}/pred_correlations.npy"
+        filepath = f"results/{layer}/pred_correlations.npy"
         data = np.load(filepath)
 
         measure = 'predcorr'
     except FileNotFoundError:
         try:
-            filepath = f"../results/{layer}/predictions.npy"
+            filepath = f"results/{layer}/predictions.npy"
             data = np.load(filepath)
 
             measure = 'pred'
         except FileNotFoundError:
-            filepath = f"../results/{layer}/eval_correlations.npy"
+            filepath = f"results/{layer}/eval_correlations.npy"
             data = np.load(filepath)
 
             measure = 'evalcorr'
 
     # Reverse flattening and masking with an fmri scan
-    fmri_scan = np.load('train_00.npy')
+    fmri_scan = np.load('visual_tools/train_00.npy')
 
     mask = ~np.isnan(fmri_scan[0])
 
@@ -52,7 +52,7 @@ def create_flatmap(subject, layer):
     flattened_data = reconstructed_data.flatten()
 
     # Load mappers
-    map_dir = "../../BridgeTower-Brain/data/fmri_data/mappers"
+    map_dir = "../BridgeTower-Brain/data/fmri_data/mappers"
 
     lh_mapping_matrix = load_npz(f"{map_dir}/{subject}_listening_forVL_lh.npz")
     lh_vertex_data = lh_mapping_matrix @ flattened_data
@@ -63,12 +63,12 @@ def create_flatmap(subject, layer):
     rh_vertex_coords = np.load(f"{map_dir}/{subject}_vertex_coords_rh.npy")
 
     # set vmin, vmax based on measure type
-    if (measure == 'predcorr') | (measure == 'evalcorr'):
+    if measure == 'predcorr':
         vmin = -0.1
         vmax = 0.1
-    elif measure == 'pred':
-        data_max = np.max(abs(np.concatenate((lh_vertex_data,
-                                              rh_vertex_data))))
+    elif (measure == 'pred') | (measure == 'evalcorr'):
+        data_max = np.nanmax(abs(np.concatenate((lh_vertex_data,
+                                                 rh_vertex_data))))
         vmin, vmax = -data_max, data_max
 
     fig, axs = plt.subplots(1, 2, figsize=(10, 7))
