@@ -45,8 +45,8 @@ class VisualFeatures:
         if self.data_type == "hdf":
             self.stim_data = load_hdf5_array(self.path,
                                              key='stimuli')
-        elif self.data_type in ['.png', '.jpg', '.jpeg',
-                                '.bmp', '.gif']:
+        elif self.data_type in ['png', 'jpg', 'jpeg',
+                                'bmp', 'gif']:
             self.stim_data = Image.open(self.path).convert('RGB')
 
         if self.ModelHandler.model_name == 'llava':
