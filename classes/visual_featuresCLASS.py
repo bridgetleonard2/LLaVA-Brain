@@ -49,9 +49,15 @@ class VisualFeatures:
                                 'bmp', 'gif']:
             self.stim_data = Image.open(self.path).convert('RGB')
 
+            # Since it's a single image, add a dimension to make it
+            # a single frame movie
+            self.stim_data = np.expand_dims(np.array(self.stim_data),
+                                            axis=0)
+
         if self.ModelHandler.model_name == 'llava':
             # convert list to np.array
             self.stim_data = np.array(self.stim_data)
+        print(f"Loaded {self.stim_data.shape} image data")
 
     def get_features(self, batch_size=50, n=30):
         prompt = ""
