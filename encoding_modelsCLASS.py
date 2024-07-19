@@ -340,7 +340,7 @@ class EncodingModels:
                 np.save(file_path, self.output)
             else:
                 # Output is mean predictions
-                self.output = np.array(self.predictions).mean(axis=0)
+                self.output = np.nanmean(np.array(self.predictions), axis=0)
 
                 file_name = 'predictions.npy'
                 file_path = os.path.join(directory, file_name)
@@ -354,7 +354,7 @@ class EncodingModels:
             self.evaluate()
 
             # Output is the average correlations
-            self.output = np.array(self.correlations).mean(axis=0)
+            self.output = np.nanmean(np.array(self.correlations), axis=0)
 
             file_name = 'eval_correlations.npy'
             file_path = os.path.join(directory, file_name)
