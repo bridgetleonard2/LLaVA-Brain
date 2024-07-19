@@ -100,7 +100,7 @@ class EncodingModels:
                 # load features if they exist
                 feat_file = stim_file.split('.')[0] + '_features.npy'
                 feat_path = os.path.join(self.features_dir, feat_file)
-                stim_features = np.load(feat_path, allow_pickle=True)
+                train_stim_features = np.load(feat_path, allow_pickle=True)
             except FileNotFoundError:
                 stim_path = os.path.join(self.train_stim_dir, stim_file)
                 if self.train_stim_type == "visual":
@@ -108,29 +108,29 @@ class EncodingModels:
                         stim_path, self.model_handler)
                     visual_features.load_image()
                     visual_features.get_features()
-                    stim_features = visual_features.visualFeatures
+                    train_stim_features = visual_features.visualFeatures
                 elif self.train_stim_type == "language":
                     language_features = (
                         language_featuresCLASS.LanguageFeatures(
                             stim_path, self.model_handler))
                     language_features.load_text()
                     language_features.get_features()
-                    stim_features = (
+                    train_stim_features = (
                         language_features.languageFeatures
                     )
 
-                np.save(feat_path, stim_features)
+                np.save(feat_path, train_stim_features)
 
             # Only resample features if dimensions don't match fmri
-            fmri_shape = self.train_fmri_arrays[i].shape
-            print("features shape", stim_features.shape[0])
-            print("fmri shape", fmri_shape[0])
-            if stim_features.shape[0] != fmri_shape[0]:
-                stim_features_resampled = utils.resample_to_acq(
-                    stim_features, fmri_shape)
+            train_fmri_shape = self.train_fmri_arrays[i].shape
+            print("features shape", train_stim_features.shape[0])
+            print("fmri shape", train_fmri_shape[0])
+            if train_stim_features.shape[0] != train_fmri_shape[0]:
+                train_stim_features_resampled = utils.resample_to_acq(
+                    train_stim_features, train_fmri_shape)
             else:
-                stim_features_resampled = stim_features
-            self.train_feature_arrays.append(stim_features_resampled)
+                train_stim_features_resampled = train_stim_features
+            self.train_feature_arrays.append(train_stim_features_resampled)
 
         if self.test_stim_dir:
             self.test_feature_arrays = []
@@ -139,7 +139,8 @@ class EncodingModels:
                     # load features if they exist
                     feat_file = stim_file.split('.')[0] + '_features.npy'
                     feat_path = os.path.join(self.features_dir, feat_file)
-                    stim_features = np.load(feat_path, allow_pickle=True)
+                    test_stim_features = np.load(feat_path, allow_pickle=True)
+                    print("Features loaded", test_stim_features.shape)
                 except FileNotFoundError:
                     stim_path = os.path.join(self.test_stim_dir, stim_file)
                     if self.test_stim_type == "visual":
@@ -153,23 +154,24 @@ class EncodingModels:
                                 stim_path, self.model_handler))
                         language_features.load_text()
                         language_features.get_features()
-                        stim_features = (
+                        test_stim_features = (
                             language_features.languageFeatures
                         )
 
-                    np.save(feat_path, stim_features)
+                    np.save(feat_path, test_stim_features)
 
                 # Only resample features if dimensions don't match fmri
                 if self.test_fmri_dir:
+                    print("test fmri dir exists")
                     fmri_shape = self.test_fmri_arrays[i].shape
-                    if stim_features.shape[0] != fmri_shape[0]:
-                        stim_features_resampled = utils.resample_to_acq(
-                            stim_features, fmri_shape)
+                    if test_stim_features.shape[0] != fmri_shape[0]:
+                        test_stim_features_resampled = utils.resample_to_acq(
+                            test_stim_features, fmri_shape)
                     else:
-                        stim_features_resampled = stim_features
+                        test_stim_features_resampled = test_stim_features
                 else:
-                    stim_features_resampled = stim_features
-                self.test_feature_arrays.append(stim_features_resampled)
+                    test_stim_features_resampled = test_stim_features
+                self.test_feature_arrays.append(test_stim_features_resampled)
             print("Features loaded", np.array(self.test_feature_arrays).shape)
 
     def evaluate(self):
