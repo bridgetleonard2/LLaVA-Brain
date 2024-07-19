@@ -170,6 +170,7 @@ class EncodingModels:
                 else:
                     stim_features_resampled = stim_features
                 self.test_feature_arrays.append(stim_features_resampled)
+            print("Features loaded", np.array(self.test_feature_arrays).shape)
 
     def evaluate(self):
         """Evaluate the encoding models using leave-one-run-out
