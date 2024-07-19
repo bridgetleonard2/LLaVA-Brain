@@ -340,6 +340,9 @@ class EncodingModels:
                 np.save(file_path, self.output)
             else:
                 # Output is mean predictions
+                num_zeros_pred = np.count_nonzero(np.array(self.predictions) == 0)
+                print(f"Number of zero predictions: {num_zeros_pred}")
+
                 self.output = np.nanmean(np.array(self.predictions), axis=0)
 
                 file_name = 'predictions.npy'
