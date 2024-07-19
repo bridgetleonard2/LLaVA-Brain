@@ -110,8 +110,9 @@ class EncodingModels:
                     visual_features.get_features()
                     stim_features = visual_features.visualFeatures
                 elif self.train_stim_type == "language":
-                    language_features = language_featuresCLASS.LanguageFeatures(
-                        stim_path, self.model_handler)
+                    language_features = (
+                        language_featuresCLASS.LanguageFeatures(
+                            stim_path, self.model_handler))
                     language_features.load_text()
                     language_features.get_features()
                     stim_features = (
@@ -141,10 +142,21 @@ class EncodingModels:
                     stim_features = np.load(feat_path, allow_pickle=True)
                 except FileNotFoundError:
                     stim_path = os.path.join(self.test_stim_dir, stim_file)
-                    visual_features = visual_featuresCLASS.VisualFeatures(
-                        stim_path, self.model_handler)
-                    visual_features.load_image()
-                    stim_features = visual_features.get_features()
+                    if self.test_stim_type == "visual":
+                        visual_features = visual_featuresCLASS.VisualFeatures(
+                            stim_path, self.model_handler)
+                        visual_features.load_image()
+                        visual_features.get_features()
+                    elif self.test_stim_type == "language":
+                        language_features = (
+                            language_featuresCLASS.LanguageFeatures(
+                                stim_path, self.model_handler))
+                        language_features.load_text()
+                        language_features.get_features()
+                        stim_features = (
+                            language_features.languageFeatures
+                        )
+
                     np.save(feat_path, stim_features)
 
                 # Only resample features if dimensions don't match fmri

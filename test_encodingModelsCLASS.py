@@ -5,20 +5,45 @@ model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)
 model_handler.load_model()
 
-# vision model evaluate to start
-train_stim_dir = "../bridgetower-brain/data/encodingModels_pipeline/train_stim"
-train_fmri_dir = "../bridgetower-brain/data/encodingModels_pipeline/train_fmri"
+test_type = "pred"
+data_dir = "../bridgetower-brain/data/encodingModels_pipeline"
 
-train_stim_type = "visual"
+if test_type == "eval":
+    # vision model evaluate to start
+    train_stim_dir = f"{data_dir}/movie_stim"
+    train_fmri_dir = f"{data_dir}/movie_fmri"
 
-feat_dir = "results/features"
+    train_stim_type = "visual"
 
-encoding_model = encoding_modelsCLASS.EncodingModels(
-    model_handler, train_stim_dir, train_fmri_dir,
-    train_stim_type, features_dir=feat_dir
-    )
+    feat_dir = "results/features"
 
-encoding_model.load_fmri()
-encoding_model.load_features()
+    encoding_model = encoding_modelsCLASS.EncodingModels(
+        model_handler, train_stim_dir, train_fmri_dir,
+        train_stim_type, features_dir=feat_dir
+        )
 
-encoding_model.encoding_pipeline()
+    encoding_model.load_fmri()
+    encoding_model.load_features()
+
+    encoding_model.encoding_pipeline()
+elif test_type == "pred":
+    # prediction model with faces
+    train_stim_dir = f"{data_dir}/movie_stim"
+    train_fmri_dir = f"{data_dir}/movie_fmri"
+
+    train_stim_type = "visual"
+
+    test_stim_dir = f"{data_dir}/face_stim"
+
+    feat_dir = "results/features"
+
+    encoding_model = encoding_modelsCLASS.EncodingModels(
+        model_handler, train_stim_dir, train_fmri_dir,
+        train_stim_type, test_stim_dir=test_stim_dir,
+        test_stim_type="visual", features_dir=feat_dir
+        )
+
+    encoding_model.load_fmri()
+    encoding_model.load_features()
+
+    encoding_model.encoding_pipeline()
