@@ -92,13 +92,16 @@ class LanguageFeatures:
             for i, word in enumerate(self.stim_data):
                 # if one of first 20 words, just pad with all the words before
                 if i < context:
-                    chunk = ' '.join(self.stim_data[:(i+context)])
+                    chunk = ' '.join(self.stim_data[:(i+context)] +
+                                     ['']*(context-i))
                 # if one of last 20 words, just pad with all the words after it
                 elif i > len(self.stim_data) - context:
                     chunk = ' '.join(self.stim_data[(i-context):])
                 else:
-                    chunk = ' '.join(self.stim_data[(i-context):(i+context)])
-                    print(chunk)
+                    chunk = ' '.join(self.stim_data[(i-context):(i+context)] +
+                                     ['']*(context - (
+                                         len(self.stim_data) - i)))
+                    print(len(chunk))
                 words_with_context.append(chunk)
 
         print("Number of words in story:", len(words_with_context))
