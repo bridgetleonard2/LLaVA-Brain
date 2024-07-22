@@ -98,6 +98,7 @@ class LanguageFeatures:
                     chunk = ' '.join(self.stim_data[(i-context):])
                 else:
                     chunk = ' '.join(self.stim_data[(i-context):(i+context)])
+                    print(chunk)
                 words_with_context.append(chunk)
 
         print("Number of words in story:", len(words_with_context))
