@@ -84,7 +84,7 @@ class LanguageFeatures:
             #     # convert list to np.array
             #     self.stim_data = np.array(self.stim_data)
 
-    def get_features(self, batch_size=10, context=20, alignment=False):
+    def get_features(self, batch_size=20, context=20, alignment=False):
         if alignment:
             words_with_context = [self.stim_data]
         else:

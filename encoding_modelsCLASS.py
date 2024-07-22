@@ -125,8 +125,8 @@ class EncodingModels:
 
             # Only resample features if dimensions don't match fmri
             train_fmri_shape = self.train_fmri_arrays[i].shape
-            print("features shape", train_stim_features.shape[0])
-            print("fmri shape", train_fmri_shape[0])
+            print("features shape", train_stim_features.shape)
+            print("fmri shape", train_fmri_shape)
             if train_stim_features.shape[0] != train_fmri_shape[0]:
                 train_stim_features_resampled = utils.resample_to_acq(
                     train_stim_features, train_fmri_shape)

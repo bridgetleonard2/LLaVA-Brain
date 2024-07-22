@@ -12,7 +12,8 @@ from sklearn.pipeline import make_pipeline
 
 def resample_to_acq(feature_data, fmri_data_shape):
     dimensions = fmri_data_shape[0]
-    data_transposed = feature_data.T
+    # data_transposed = feature_data.T
+    data_transposed = feature_data
     data_resampled = np.empty((data_transposed.shape[0], dimensions))
 
     for i in range(data_transposed.shape[0]):
