@@ -134,7 +134,8 @@ class LanguageFeatures:
 
             model_inputs = self.ModelHandler.processor(images=batch_images,
                                                        text=batch_text,
-                                                       return_tensors='pt')
+                                                       return_tensors='pt',
+                                                       padding=True)
             model_inputs = {key: value.to(self.ModelHandler.device) for key,
                             value in model_inputs.items()}
 
