@@ -5,7 +5,7 @@ model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)
 model_handler.load_model()
 
-test_type = "pred"
+test_type = "predcorr"
 data_dir = "../bridgetower-brain/data/encodingModels_pipeline"
 
 if test_type == "eval":
@@ -47,7 +47,7 @@ elif test_type == "pred":
     encoding_model.load_features()
 
     encoding_model.encoding_pipeline()
-elif test_type == "pred":
+elif test_type == "predcorr":
     train_stim_dir = f"{data_dir}/movie_stim"
     train_fmri_dir = f"{data_dir}/movie_fmri"
 
