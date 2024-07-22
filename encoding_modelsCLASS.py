@@ -127,6 +127,13 @@ class EncodingModels:
             train_fmri_shape = self.train_fmri_arrays[i].shape
             print("features shape", train_stim_features.shape)
             print("fmri shape", train_fmri_shape)
+
+            # if features are >2 dimensions, average across the
+            # second dimension
+            if len(train_stim_features.shape) > 2:
+                train_stim_features = np.mean(train_stim_features, axis=1)
+                print("new features shape", train_stim_features.shape)
+
             if train_stim_features.shape[0] != train_fmri_shape[0]:
                 train_stim_features_resampled = utils.resample_to_acq(
                     train_stim_features, train_fmri_shape)
@@ -164,6 +171,17 @@ class EncodingModels:
 
                 # Only resample features if dimensions don't match fmri
                 if self.test_fmri_dir:
+                    test_fmri_shape = self.test_fmri_arrays[i].shape
+                    print("features shape", test_stim_features.shape)
+                    print("fmri shape", test_fmri_shape)
+
+                    # if features are >2 dimensions, average across the second
+                    # dimension
+                    if len(test_stim_features.shape) > 2:
+                        test_stim_features = np.mean(test_stim_features,
+                                                     axis=1)
+                        print("new features shape", test_stim_features.shape)
+
                     fmri_shape = self.test_fmri_arrays[i].shape
                     if test_stim_features.shape[0] != fmri_shape[0]:
                         test_stim_features_resampled = utils.resample_to_acq(
