@@ -5,15 +5,15 @@ model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)
 model_handler.load_model()
 
-test_type = "predcorr"
+test_type = "eval"
 data_dir = "../bridgetower-brain/data/encodingModels_pipeline"
 
 if test_type == "eval":
     # vision model evaluate to start
-    train_stim_dir = f"{data_dir}/movie_stim"
-    train_fmri_dir = f"{data_dir}/movie_fmri"
+    train_stim_dir = f"{data_dir}/story_stim"
+    train_fmri_dir = f"{data_dir}/story_fmri"
 
-    train_stim_type = "visual"
+    train_stim_type = "language"
 
     feat_dir = "results/features"
 

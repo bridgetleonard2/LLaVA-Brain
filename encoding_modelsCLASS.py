@@ -3,6 +3,8 @@ import numpy as np
 from classes import visual_featuresCLASS
 from classes import language_featuresCLASS
 from sklearn import set_config
+from datasets import load_dataset  # type: ignore
+from tqdm import tqdm
 
 import utils
 
@@ -241,24 +243,29 @@ class EncodingModels:
 
     def alignment(self):
         # try loading alignment
-        filename = f"{self.model_handler.layer_name}_alignment.npy"
-        alignment_path = os.path.join(self.features_dir, filename)
+        im_to_cap_filename = (f"{self.model_handler.layer_name}"
+                              "_im_to_cap_alignment.npy")
+        cap_to_im_filename = (f"{self.model_handler.layer_name}"
+                              "_cap_to_im_alignment.npy")
+        im_to_cap_path = os.path.join(self.features_dir, im_to_cap_filename)
+        cap_to_im_path = os.path.join(self.features_dir, cap_to_im_filename)
         try:
-            align_matrix = np.load(alignment_path)
+            self.coef_image_to_caption = np.load(im_to_cap_path)
+            self.coef_caption_to_image = np.load(cap_to_im_path)
         except FileNotFoundError:
             # if alignment doesn't exist, create one
             alignment_data = load_dataset("nlphuji/flickr30k", split='test',
-                                streaming=True)
-            
+                                          streaming=True)
+
             alignment_features = []
-            
+
             for item in tqdm(alignment_data):
                 image = item['image']
                 image_array = np.array(image)
                 caption = " ".join(item['caption'])
-                
+
                 stim_path = ""
-                
+
                 # dont do load_image
                 visual_features = visual_featuresCLASS.VisualFeatures(
                         stim_path, self.model_handler)
@@ -276,7 +283,7 @@ class EncodingModels:
                 alignment_features.append((image_vector, caption_vector))
 
             alignment_features = np.array(alignment_features)
-            
+
             captions = alignment_features[:, 1]
             images = alignment_features[:, 0]
 
@@ -285,7 +292,7 @@ class EncodingModels:
             if captions.ndim > 2:
                 captions = np.mean(captions, axis=1)
                 images = np.mean(images, axis=1)
-            
+
             pipeline, backend = utils.set_pipeline("", cv=5)
 
             set_config(display='diagram')  # requires scikit-learn 0.23
