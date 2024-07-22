@@ -141,7 +141,8 @@ class LanguageFeatures:
 
             # Perform model inference on the batch
             with torch.no_grad():
-                _ = self.ModelHandler.model.generate(**model_inputs)
+                _ = self.ModelHandler.model.generate(**model_inputs,
+                                                     max_new_tokens=50)
 
         all_tensors = self.ModelHandler.features['layer']
 
