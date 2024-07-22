@@ -239,19 +239,96 @@ class EncodingModels:
 
             self.correlations.append(test_correlations)
 
-    def build(self, alignment=False):
-        """Build the encoding model."""
-        if alignment:
-            # replace with actual later***
-            align_matrix = np.random.randn(768,
-                                           81111)
-            transformed_features = []
-            for i in range(len(self.train_feature_arrays)):
-                transformed_features.append(np.dot(
-                    self.train_feature_arrays[i],
-                    align_matrix))
-            self.train_feature_arrays = transformed_features
+    def alignment(self):
+        # try loading alignment
+        filename = f"{self.model_handler.layer_name}_alignment.npy"
+        alignment_path = os.path.join(self.features_dir, filename)
+        try:
+            align_matrix = np.load(alignment_path)
+        except FileNotFoundError:
+            # if alignment doesn't exist, create one
+            alignment_data = load_dataset("nlphuji/flickr30k", split='test',
+                                streaming=True)
+            
+            alignment_features = []
+            
+            for item in tqdm(alignment_data):
+                image = item['image']
+                image_array = np.array(image)
+                caption = " ".join(item['caption'])
+                
+                stim_path = ""
+                
+                # dont do load_image
+                visual_features = visual_featuresCLASS.VisualFeatures(
+                        stim_path, self.model_handler)
+                visual_features.stim_data = image_array
+                visual_features.get_features()
+                image_vector = visual_features.visualFeatures
 
+                language_features = (
+                        language_featuresCLASS.LanguageFeatures(
+                            stim_path, self.model_handler))
+                language_features.stim_data = caption
+                language_features.get_features(alignment=True)
+                caption_vector = language_features.languageFeatures
+
+                alignment_features.append((image_vector, caption_vector))
+
+            alignment_features = np.array(alignment_features)
+            
+            captions = alignment_features[:, 1]
+            images = alignment_features[:, 0]
+
+            # Data should be 2d of shape (n_images/n, num_features)
+            # if data is above 2d, average 2nd+ dimensions
+            if captions.ndim > 2:
+                captions = np.mean(captions, axis=1)
+                images = np.mean(images, axis=1)
+            
+            pipeline, backend = utils.set_pipeline("", cv=5)
+
+            set_config(display='diagram')  # requires scikit-learn 0.23
+            pipeline
+
+            _ = pipeline.fit(images, captions)
+            self.coef_image_to_caption = backend.to_numpy(pipeline[-1].coef_)
+
+            # Check if zeroes in coef_images_to_captions
+            num_zeroes_im_to_cap = np.count_nonzero(
+                self.coef_image_to_caption == 0)
+            print("image to caption zeros:", num_zeroes_im_to_cap)
+
+            epsilon = 1e-10
+
+            if num_zeroes_im_to_cap > 0:
+                self.coef_image_to_caption = self.coef_image_to_caption.astype(
+                    float)
+                self.coef_image_to_caption[
+                    self.coef_image_to_caption == 0] = epsilon
+
+            self.coef_image_to_caption /= np.linalg.norm(
+                self.coef_image_to_caption, axis=0)[None]
+
+            _ = pipeline.fit(captions, images)
+            self.coef_caption_to_image = backend.to_numpy(pipeline[-1].coef_)
+
+            # Check if zeroes in coef_captions_to_images
+            num_zeroes_cap_to_im = np.count_nonzero(
+                self.coef_caption_to_image == 0)
+            print("caption to image zeros:", num_zeroes_cap_to_im)
+
+            if num_zeroes_cap_to_im > 0:
+                self.coef_caption_to_image = self.coef_caption_to_image.astype(
+                    float)
+                self.coef_caption_to_image[
+                    self.coef_caption_to_image == 0] = epsilon
+
+            self.coef_caption_to_image /= np.linalg.norm(
+                self.coef_caption_to_image, axis=0)[None]
+
+    def build(self):
+        """Build the encoding model."""
         print("Building encoding model using all training data")
         X_train = np.vstack(self.train_feature_arrays)
         Y_train = np.vstack(self.train_fmri_arrays)
@@ -286,8 +363,17 @@ class EncodingModels:
 
         self.encoding_model = average_coef
 
-    def predict(self):
+    def predict(self, alignment=False):
         """Predict fMRI data using the encoding model."""
+        if alignment:
+            if self.test_stim_type == "visual":
+                self.test_feature_arrays = [
+                    np.dot(X, self.coef_image_to_caption) for X
+                    in self.test_feature_arrays]
+            elif self.test_stim_type == "language":
+                self.test_feature_arrays = [
+                    np.dot(X, self.coef_caption_to_image) for X
+                    in self.test_feature_arrays]
         self.predictions = []
         for i in range(len(self.test_feature_arrays)):
             X_test = self.test_feature_arrays[i]
@@ -312,7 +398,7 @@ class EncodingModels:
                                                 axis=0)
             print("Max correlation:", np.nanmax(self.mean_correlations))
 
-    def encoding_pipeline(self):
+    def encoding_pipeline(self, alignment=False):
         """The encoding pipeline depends on the kind of data provided."""
         # Define the directory and file name
         directory = f'results/{self.model_handler.layer_name}'
@@ -326,7 +412,7 @@ class EncodingModels:
             # and use it to predict data from test_stim_files
             print("Building encoding model and running predictions")
             self.build()
-            self.predict()
+            self.predict(alignment)
             if self.test_fmri_dir:
                 # In this case we add on to the last step and
                 # calculate correlations between predicted and actual data

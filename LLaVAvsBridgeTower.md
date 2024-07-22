@@ -5,7 +5,7 @@ How well does a model trained on model features from movie stimuli and brain dat
 
 <div align="center">
   <img src="/bridgetower_comparisons/layer8_visual.png" alt="BridgeTower" style="width:45%; float: left; margin-right: 2%;" />
-  <img src="/results/multi_modal_projector.linear_2/evalcorr.png" alt="LLaVA" style="width:52%; float: left;" />
+  <img src="/results/multi_modal_projector.linear_2/evalcorr_vision.png" alt="LLaVA" style="width:52%; float: left;" />
   <br>
   <i>Using the vision encoding model to predict fMRI responses to movies (leave one out train/eval method). BridgeTower (left) vs LLaVA result (right)</i>
 </div>

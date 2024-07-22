@@ -202,18 +202,19 @@ def remove_run(arrays, index_to_remove):
             if idx != index_to_remove]
 
 
-def set_pipeline(feature_arrays):
-    run_onsets = []
-    current_index = 0
-    for arr in feature_arrays:
-        next_index = current_index + arr.shape[0]
-        run_onsets.append(current_index)
-        current_index = next_index
+def set_pipeline(feature_arrays, cv=None):
+    if cv is None:
+        run_onsets = []
+        current_index = 0
+        for arr in feature_arrays:
+            next_index = current_index + arr.shape[0]
+            run_onsets.append(current_index)
+            current_index = next_index
 
-    print(run_onsets)
-    n_samples_train = np.vstack(feature_arrays).shape[0]
-    cv = generate_leave_one_run_out(n_samples_train, run_onsets)
-    cv = check_cv(cv)  # cross-validation splitter into a reusable list
+        print(run_onsets)
+        n_samples_train = np.vstack(feature_arrays).shape[0]
+        cv = generate_leave_one_run_out(n_samples_train, run_onsets)
+        cv = check_cv(cv)  # cross-validation splitter into a reusable list
 
     # Define the model
     scaler = StandardScaler(with_mean=True, with_std=False)
