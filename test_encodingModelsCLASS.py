@@ -68,4 +68,4 @@ elif test_type == "pred":
     encoding_model.load_fmri()
     encoding_model.load_features()
 
-    encoding_model.encoding_pipeline(alignment=True)
+    encoding_model.encoding_pipeline()

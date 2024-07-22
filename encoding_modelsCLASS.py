@@ -412,7 +412,12 @@ class EncodingModels:
             # and use it to predict data from test_stim_files
             print("Building encoding model and running predictions")
             self.build()
-            self.predict(alignment)
+
+            # check if alignment needed
+            if self.train_stim_type != self.test_stim_type:
+                alignment = True
+
+            self.predict(alignment=alignment)
             if self.test_fmri_dir:
                 # In this case we add on to the last step and
                 # calculate correlations between predicted and actual data
