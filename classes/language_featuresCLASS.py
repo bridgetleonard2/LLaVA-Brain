@@ -84,7 +84,7 @@ class LanguageFeatures:
             #     # convert list to np.array
             #     self.stim_data = np.array(self.stim_data)
 
-    def get_features(self, batch_size=50, context=20, alignment=False):
+    def get_features(self, batch_size=10, context=20, alignment=False):
         if alignment:
             words_with_context = [self.stim_data]
         else:
@@ -92,20 +92,13 @@ class LanguageFeatures:
             for i, word in enumerate(self.stim_data):
                 # if one of first 20 words, just pad with all the words before
                 if i < context:
-                    chunk = ' '.join(self.stim_data[:(i+context)] +
-                                     ['']*(context-i))
+                    chunk = ' '.join(self.stim_data[:(i+context)])
                 # if one of last 20 words, just pad with all the words after it
                 elif i > len(self.stim_data) - context:
                     chunk = ' '.join(self.stim_data[(i-context):])
                 else:
-                    chunk = ' '.join(self.stim_data[(i-context):(i+context)] +
-                                     ['']*(context - (
-                                         len(self.stim_data) - i)))
-                    print(len(chunk))
+                    chunk = ' '.join(self.stim_data[(i-context):(i+context)])
                 words_with_context.append(chunk)
-
-        print("Number of words in story:", len(words_with_context))
-        print("Words with context shape", np.array(words_with_context).shape)
 
         # prepare images for model
         if self.ModelHandler.model_name == 'llava':
