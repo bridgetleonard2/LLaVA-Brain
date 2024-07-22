@@ -100,6 +100,9 @@ class LanguageFeatures:
                     chunk = ' '.join(self.stim_data[(i-context):(i+context)])
                 words_with_context.append(chunk)
 
+        print("Number of words in story:", len(words_with_context))
+        print("Words with context shape", np.array(words_with_context).shape)
+
         # prepare images for model
         if self.ModelHandler.model_name == 'llava':
             # Follow prompt format:
