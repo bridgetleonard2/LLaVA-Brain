@@ -391,6 +391,7 @@ class EncodingModels:
     def predict(self, alignment=False):
         """Predict fMRI data using the encoding model."""
         if alignment:
+            self.alignment()
             if self.test_stim_type == "visual":
                 self.test_feature_arrays = [
                     np.dot(X, self.coef_image_to_caption) for X
