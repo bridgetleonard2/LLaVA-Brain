@@ -86,8 +86,8 @@ class VisualFeatures:
 
             batch_images = self.stim_data[batch_start:batch_end]
             batch_text = text[batch_start:batch_end]
-            print(f"Processing batch {batch_idx} with {len(batch_images)} images"
-                  f" and {len(batch_text)} text")
+            print(f"Processing batch {batch_idx} with {len(batch_images)} "
+                  f"images and {len(batch_text)} text")
 
             model_inputs = self.ModelHandler.processor(images=batch_images,
                                                        text=batch_text,
