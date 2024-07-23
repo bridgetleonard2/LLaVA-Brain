@@ -19,7 +19,8 @@ def textgrid_to_array(textgrid):
     full_transcript : Array
         Array with each word in the story.
     """
-    if textgrid == 'data/raw_stimuli/textgrids/stimuli/legacy.TextGrid':
+    if textgrid == ('../bridgetower-brain/data/encodingModels_pipeline'
+                    '/story_stim/legacy.TextGrid'):
         with open(textgrid, 'r')as file:
             data = file.readlines()
 
@@ -30,7 +31,8 @@ def textgrid_to_array(textgrid):
                 index = data.index(line)
                 word = re.search(r'"([^"]*)"', data[index+1].strip()).group(1)
                 full_transcript.append(word)
-    elif textgrid == 'data/raw_stimuli/textgrids/stimuli/life.TextGrid':
+    elif textgrid == ('../bridgetower-brain/data/encodingModels_pipeline'
+                      '/story_stim/life.TextGrid'):
         with open(textgrid, 'r') as file:
             data = file.readlines()
 
