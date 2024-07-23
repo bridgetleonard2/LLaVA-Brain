@@ -70,6 +70,7 @@ class VisualFeatures:
             )
         else:
             formatted_prompt = prompt
+        print("self.stim_data.shape[0]:", self.stim_data.shape[0])
         # text is just blank strings for each of the items in stim_data
         text = [formatted_prompt for i in range(self.stim_data.shape[0])]
 
