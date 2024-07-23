@@ -279,12 +279,12 @@ class EncodingModels:
 
             for item in tqdm(alignment_data):
                 image = item['image']
-                image_array = np.array(image)
 
                 # Since it's a single image, add a dimension to make it
                 # a single frame movie
-                image_array = np.expand_dims(image_array,
+                image_array = np.expand_dims(np.array(image),
                                              axis=0)
+                print(f"Loaded {image_array.shape} image data")
                 caption = " ".join(item['caption'])
 
                 stim_path = ""
