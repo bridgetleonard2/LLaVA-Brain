@@ -41,7 +41,7 @@ class VisualFeatures:
         self.data_type = path.split('.')[-1]
         self.ModelHandler = ModelHandler
 
-    def load_image(self):
+    def load_image(self, data):
         if self.data_type == "hdf":
             self.stim_data = load_hdf5_array(self.path,
                                              key='stimuli')
@@ -52,6 +52,11 @@ class VisualFeatures:
             # Since it's a single image, add a dimension to make it
             # a single frame movie
             self.stim_data = np.expand_dims(np.array(self.stim_data),
+                                            axis=0)
+        elif self.data_type == "flickr":
+            # Since it's a single image, add a dimension to make it
+            # a single frame movie
+            self.stim_data = np.expand_dims(np.array(data),
                                             axis=0)
 
         if self.ModelHandler.model_name == 'llava':
