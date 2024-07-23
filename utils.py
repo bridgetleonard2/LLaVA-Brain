@@ -12,16 +12,15 @@ from sklearn.pipeline import make_pipeline
 
 def resample_to_acq(feature_data, fmri_data_shape):
     dimensions = fmri_data_shape[0]
-    # data_transposed = feature_data.T
-    data_transposed = feature_data
-    data_resampled = np.empty((data_transposed.shape[0], dimensions))
+    data = feature_data
+    data_resampled = np.empty((dimensions, data.shape[1]))
 
-    for i in range(data_transposed.shape[0]):
-        data_resampled[i, :] = resample(data_transposed[i, :],
+    for i in range(data.shape[1]):
+        data_resampled[:, i] = resample(data[:, i],
                                         dimensions, window=('kaiser', 14))
 
-    print("Shape after resampling:", data_resampled.T.shape)
-    return data_resampled.T
+    print("Shape after resampling:", data_resampled.shape)
+    return data_resampled
 
 
 def remove_nan(data):
