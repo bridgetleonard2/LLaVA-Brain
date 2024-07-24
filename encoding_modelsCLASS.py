@@ -345,7 +345,7 @@ class EncodingModels:
             # save alignment
             np.save(im_to_cap_path, self.coef_image_to_caption)
 
-            _ = pipeline.fit(captions, images)
+            _ = pipeline.fit(caption_features, image_features)
             self.coef_caption_to_image = backend.to_numpy(pipeline[-1].coef_)
 
             # Check if zeroes in coef_captions_to_images
