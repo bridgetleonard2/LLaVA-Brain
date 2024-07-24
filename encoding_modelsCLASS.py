@@ -301,7 +301,7 @@ class EncodingModels:
             visual_features = visual_featuresCLASS.VisualFeatures(
                     stim_path, self.model_handler)
             visual_features.stim_data = images_array
-            visual_features.get_features()
+            visual_features.get_features(batch_size=20)
             image_features = visual_features.visualFeatures
 
             language_features = (
