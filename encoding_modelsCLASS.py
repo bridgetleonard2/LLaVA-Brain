@@ -4,7 +4,6 @@ from classes import visual_featuresCLASS
 from classes import language_featuresCLASS
 from sklearn import set_config
 from datasets import load_dataset  # type: ignore
-from tqdm import tqdm
 
 import utils
 
@@ -274,57 +273,47 @@ class EncodingModels:
             # if alignment doesn't exist, create one
             alignment_data = load_dataset("nlphuji/flickr30k", split='test',
                                           streaming=True)
+            # Take 1000 samples
+            shuffled_data = alignment_data.shuffle(seed=42)
+            alignment_data = shuffled_data.take(1000)
 
-            alignment_features = []
+            images = [item['image'] for item in alignment_data]
+            captions = [" ".join(item['caption']) for item in alignment_data]
 
-            for item in tqdm(alignment_data):
-                image = item['image']
-                caption = " ".join(item['caption'])
+            images_array = np.array(images)
+            captions_array = np.array(captions)
 
-                stim_path = ""
+            print("images shape", images_array.shape)
+            print("captions shape", captions_array.shape)
 
-                # Since it's a single image, add a dimension to make it
-                # a single frame movie
-                image_array = np.expand_dims(
-                    np.array(image), axis=0)
+            stim_path = ""
 
-                visual_features = visual_featuresCLASS.VisualFeatures(
-                        stim_path, self.model_handler)
-                visual_features.stim_data = image_array
-                visual_features.get_features()
-                image_vector = visual_features.visualFeatures
+            visual_features = visual_featuresCLASS.VisualFeatures(
+                    stim_path, self.model_handler)
+            visual_features.stim_data = images_array
+            visual_features.get_features()
+            image_features = visual_features.visualFeatures
 
-                language_features = (
-                        language_featuresCLASS.LanguageFeatures(
-                            stim_path, self.model_handler))
+            language_features = (
+                    language_featuresCLASS.LanguageFeatures(
+                        stim_path, self.model_handler))
 
-                # Since a single caption, add a dimension
-                caption_array = np.expand_dims(
-                    np.array(caption), axis=0)
-
-                language_features.stim_data = caption_array
-                language_features.get_features(alignment=True)
-                caption_vector = language_features.languageFeatures
-
-                alignment_features.append((image_vector, caption_vector))
-
-            alignment_features = np.array(alignment_features)
-
-            captions = alignment_features[:, 1]
-            images = alignment_features[:, 0]
+            language_features.stim_data = captions_array
+            language_features.get_features(alignment=True)
+            caption_features = language_features.languageFeatures
 
             # Data should be 2d of shape (n_images/n, num_features)
             # if data is above 2d, average 2nd+ dimensions
-            if captions.ndim > 2:
-                captions = np.mean(captions, axis=1)
-                images = np.mean(images, axis=1)
+            if caption_features.ndim > 2:
+                caption_features = np.mean(caption_features, axis=1)
+                image_features = np.mean(image_features, axis=1)
 
             pipeline, backend = utils.set_pipeline("", cv=5)
 
             set_config(display='diagram')  # requires scikit-learn 0.23
             pipeline
 
-            _ = pipeline.fit(images, captions)
+            _ = pipeline.fit(image_features, caption_features)
             self.coef_image_to_caption = backend.to_numpy(pipeline[-1].coef_)
 
             # Check if zeroes in coef_images_to_captions

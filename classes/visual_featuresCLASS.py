@@ -53,11 +53,6 @@ class VisualFeatures:
             # a single frame movie
             self.stim_data = np.expand_dims(np.array(self.stim_data),
                                             axis=0)
-        elif self.data_type == "flickr":
-            # Since it's a single image, add a dimension to make it
-            # a single frame movie
-            self.stim_data = np.expand_dims(np.array(data),
-                                            axis=0)
 
         if self.ModelHandler.model_name == 'llava':
             # convert list to np.array
