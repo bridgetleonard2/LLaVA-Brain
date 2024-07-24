@@ -342,6 +342,9 @@ class EncodingModels:
             self.coef_image_to_caption /= np.linalg.norm(
                 self.coef_image_to_caption, axis=0)[None]
 
+            print("coef_image_to_caption shape",
+                  self.coef_image_to_caption.shape)
+
             # save alignment
             np.save(im_to_cap_path, self.coef_image_to_caption)
 
@@ -361,6 +364,9 @@ class EncodingModels:
 
             self.coef_caption_to_image /= np.linalg.norm(
                 self.coef_caption_to_image, axis=0)[None]
+
+            print("coef_caption_to_image shape",
+                  self.coef_caption_to_image.shape)
 
             # save alignment
             np.save(cap_to_im_path, self.coef_caption_to_image)
