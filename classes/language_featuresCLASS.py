@@ -88,7 +88,7 @@ class LanguageFeatures:
 
     def get_features(self, batch_size=20, context=20, alignment=False):
         if alignment:
-            words_with_context = [self.stim_data]
+            words_with_context = self.stim_data
         else:
             words_with_context = []
             for i, word in enumerate(self.stim_data):

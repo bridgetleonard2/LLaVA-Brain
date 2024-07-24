@@ -309,7 +309,7 @@ class EncodingModels:
                         stim_path, self.model_handler))
 
             language_features.stim_data = captions_array
-            language_features.get_features(alignment=True)
+            language_features.get_features(batch_size=10, alignment=True)
             caption_features = language_features.languageFeatures
 
             # Data should be 2d of shape (n_images/n, num_features)
