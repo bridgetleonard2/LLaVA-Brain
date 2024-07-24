@@ -407,11 +407,11 @@ class EncodingModels:
             self.alignment()
             if self.test_stim_type == "visual":
                 self.test_feature_arrays = [
-                    np.dot(X, self.coef_image_to_caption) for X
+                    np.dot(X, self.coef_image_to_caption.T) for X
                     in self.test_feature_arrays]
             elif self.test_stim_type == "language":
                 self.test_feature_arrays = [
-                    np.dot(X, self.coef_caption_to_image) for X
+                    np.dot(X, self.coef_caption_to_image.T) for X
                     in self.test_feature_arrays]
         self.predictions = []
         for i in range(len(self.test_feature_arrays)):
