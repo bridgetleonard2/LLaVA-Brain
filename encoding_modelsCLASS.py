@@ -270,6 +270,15 @@ class EncodingModels:
             self.coef_image_to_caption = np.load(im_to_cap_path)
             self.coef_caption_to_image = np.load(cap_to_im_path)
         except FileNotFoundError:
+            def preprocess_image(image):
+                # Convert the image to RGB (if not already in RGB)
+                image = image.convert('RGB')
+                # Resize the image to a fixed size, e.g., 224x224
+                image = image.resize((224, 224))
+                # Convert the image to a numpy array
+                image_array = np.array(image)
+                return image_array
+
             # if alignment doesn't exist, create one
             alignment_data = load_dataset("nlphuji/flickr30k", split='test',
                                           streaming=True)
@@ -277,7 +286,8 @@ class EncodingModels:
             shuffled_data = alignment_data.shuffle(seed=42)
             alignment_data = shuffled_data.take(1000)
 
-            images = [item['image'] for item in alignment_data]
+            images = [preprocess_image(item['image']) for
+                      item in alignment_data]
             captions = [" ".join(item['caption']) for item in alignment_data]
 
             images_array = np.array(images)
