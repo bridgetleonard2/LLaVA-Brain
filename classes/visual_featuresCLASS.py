@@ -75,13 +75,15 @@ class VisualFeatures:
             )
         else:
             formatted_prompt = prompt
-        print("self.stim_data.shape[0]:", self.stim_data.shape[0])
+        print("self.stim_data.shape[0]:", self.stim_data.shape)
+        num_images = self.stim_data.shape[0]
+        print("num_images:", num_images)
         # text is just blank strings for each of the items in stim_data
-        text = [formatted_prompt for i in range(self.stim_data.shape[0])]
+        text = [formatted_prompt for _ in range(self.stim_data.shape[0])]
 
         # Set number of batches to run through
         # (based on memory constraints vs time benefit)
-        num_batches = (self.stim_data.shape[0] + batch_size - 1) // batch_size
+        num_batches = (num_images + batch_size - 1) // batch_size
 
         # Make sure features is clean before starting
         self.ModelHandler.reset_features()

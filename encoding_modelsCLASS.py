@@ -279,20 +279,13 @@ class EncodingModels:
 
             for item in tqdm(alignment_data):
                 image = item['image']
-
-                # Since it's a single image, add a dimension to make it
-                # a single frame movie
-                image_array = np.expand_dims(np.array(image),
-                                             axis=0)
-                print(f"Loaded {image_array.shape} image data")
                 caption = " ".join(item['caption'])
 
-                stim_path = ""
+                stim_path = "im.flickr"
 
-                # dont do load_image
                 visual_features = visual_featuresCLASS.VisualFeatures(
                         stim_path, self.model_handler)
-                visual_features.stim_data = image_array
+                visual_features.load_image(image)
                 visual_features.get_features()
                 image_vector = visual_features.visualFeatures
 
