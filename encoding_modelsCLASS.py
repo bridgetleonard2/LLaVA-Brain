@@ -281,18 +281,28 @@ class EncodingModels:
                 image = item['image']
                 caption = " ".join(item['caption'])
 
-                stim_path = "im.flickr"
+                stim_path = ""
+
+                # Since it's a single image, add a dimension to make it
+                # a single frame movie
+                image_array = np.expand_dims(
+                    np.array(image), axis=0)
 
                 visual_features = visual_featuresCLASS.VisualFeatures(
                         stim_path, self.model_handler)
-                visual_features.load_image(image)
+                visual_features.stim_data = image_array
                 visual_features.get_features()
                 image_vector = visual_features.visualFeatures
 
                 language_features = (
                         language_featuresCLASS.LanguageFeatures(
                             stim_path, self.model_handler))
-                language_features.stim_data = caption
+
+                # Since a single caption, add a dimension
+                caption_array = np.expand_dims(
+                    np.array(caption), axis=0)
+
+                language_features.stim_data = caption_array
                 language_features.get_features(alignment=True)
                 caption_vector = language_features.languageFeatures
 
