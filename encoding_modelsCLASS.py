@@ -301,7 +301,7 @@ class EncodingModels:
             visual_features = visual_featuresCLASS.VisualFeatures(
                     stim_path, self.model_handler)
             visual_features.stim_data = images_array
-            visual_features.get_features(batch_size=20)
+            visual_features.get_features(batch_size=20, n=1)
             image_features = visual_features.visualFeatures
 
             language_features = (
@@ -342,6 +342,9 @@ class EncodingModels:
             self.coef_image_to_caption /= np.linalg.norm(
                 self.coef_image_to_caption, axis=0)[None]
 
+            # save alignment
+            np.save(im_to_cap_path, self.coef_image_to_caption)
+
             _ = pipeline.fit(captions, images)
             self.coef_caption_to_image = backend.to_numpy(pipeline[-1].coef_)
 
@@ -358,6 +361,9 @@ class EncodingModels:
 
             self.coef_caption_to_image /= np.linalg.norm(
                 self.coef_caption_to_image, axis=0)[None]
+
+            # save alignment
+            np.save(cap_to_im_path, self.coef_caption_to_image)
 
     def build(self):
         """Build the encoding model."""
