@@ -318,6 +318,9 @@ class EncodingModels:
                 caption_features = np.mean(caption_features, axis=1)
                 image_features = np.mean(image_features, axis=1)
 
+            print("image features shape", image_features.shape)
+            print("caption features shape", caption_features.shape)
+
             pipeline, backend = utils.set_pipeline("", cv=5)
 
             set_config(display='diagram')  # requires scikit-learn 0.23
