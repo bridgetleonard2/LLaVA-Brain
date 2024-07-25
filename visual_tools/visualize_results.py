@@ -205,7 +205,7 @@ def face_minus_land(subject, layer):
 
 if __name__ == "__main__":
     subject = "S1"
-    layer = "multi_modal_projector.linear_2"
+    layer = "multi-modal_projector"
 
     create_flatmap(subject, layer)
     # face_minus_land(subject, layer)
