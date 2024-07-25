@@ -327,25 +327,44 @@ class EncodingModels:
             pipeline
 
             _ = pipeline.fit(image_features, caption_features)
-            self.coef_image_to_caption = backend.to_numpy(pipeline[-1].coef_)
+            coef_im_cap = backend.to_numpy(pipeline[-1].coef_)
+
             print("coef_image_to_caption shape",
-                  self.coef_image_to_caption.shape)
+                  coef_im_cap.shape)
 
             # Check if zeroes in coef_images_to_captions
             num_zeroes_im_to_cap = np.count_nonzero(
-                self.coef_image_to_caption == 0)
+                coef_im_cap == 0)
             print("image to caption zeros:", num_zeroes_im_to_cap)
 
             epsilon = 1e-10
 
             if num_zeroes_im_to_cap > 0:
-                self.coef_image_to_caption = self.coef_image_to_caption.astype(
+                coef_im_cap = coef_im_cap.astype(
                     float)
-                self.coef_image_to_caption[
-                    self.coef_image_to_caption == 0] = epsilon
+                coef_im_cap[
+                    coef_im_cap == 0] = epsilon
 
-            self.coef_image_to_caption /= np.linalg.norm(
-                self.coef_image_to_caption, axis=0)[None]
+            print("coef_image_to_caption shape",
+                  coef_im_cap.shape)
+
+            # Regularize coefficients
+            coef_im_cap /= np.linalg.norm(coef_im_cap, axis=0)[None]
+
+            # split the ridge coefficients per delays
+            delayer = pipeline.named_steps['delayer']
+            coef_im_cap_per_delay = delayer.reshape_by_delays(coef_im_cap,
+                                                              axis=0)
+            print("(n_delays, n_features, n_voxels) =",
+                  coef_im_cap_per_delay.shape)
+            del coef_im_cap
+
+            # average over delays
+            average_im_cap_coef = np.mean(coef_im_cap_per_delay, axis=0)
+            print("(n_features, n_voxels) =", average_im_cap_coef.shape)
+            del coef_im_cap_per_delay
+
+            self.coef_image_to_caption = average_im_cap_coef
 
             print("coef_image_to_caption shape",
                   self.coef_image_to_caption.shape)
@@ -354,21 +373,36 @@ class EncodingModels:
             np.save(im_to_cap_path, self.coef_image_to_caption)
 
             _ = pipeline.fit(caption_features, image_features)
-            self.coef_caption_to_image = backend.to_numpy(pipeline[-1].coef_)
+            coef_cap_im = backend.to_numpy(pipeline[-1].coef_)
 
             # Check if zeroes in coef_captions_to_images
             num_zeroes_cap_to_im = np.count_nonzero(
-                self.coef_caption_to_image == 0)
+                coef_cap_im == 0)
             print("caption to image zeros:", num_zeroes_cap_to_im)
 
             if num_zeroes_cap_to_im > 0:
-                self.coef_caption_to_image = self.coef_caption_to_image.astype(
+                coef_cap_im = coef_cap_im.astype(
                     float)
-                self.coef_caption_to_image[
-                    self.coef_caption_to_image == 0] = epsilon
+                coef_cap_im[
+                    coef_cap_im == 0] = epsilon
 
-            self.coef_caption_to_image /= np.linalg.norm(
-                self.coef_caption_to_image, axis=0)[None]
+            # Regularize coefficients
+            coef_cap_im /= np.linalg.norm(coef_cap_im, axis=0)[None]
+
+            # split the ridge coefficients per delays
+            delayer = pipeline.named_steps['delayer']
+            coef_cap_im_per_delay = delayer.reshape_by_delays(coef_cap_im,
+                                                              axis=0)
+            print("(n_delays, n_features, n_voxels) =",
+                  coef_cap_im_per_delay.shape)
+            del coef_cap_im
+
+            # average over delays
+            average_cap_im_coef = np.mean(coef_cap_im_per_delay, axis=0)
+            print("(n_features, n_voxels) =", average_cap_im_coef.shape)
+            del coef_cap_im_per_delay
+
+            self.coef_caption_to_image = average_cap_im_coef
 
             print("coef_caption_to_image shape",
                   self.coef_caption_to_image.shape)
