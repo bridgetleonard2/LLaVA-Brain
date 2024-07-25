@@ -5,7 +5,7 @@ model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)
 model_handler.load_model()
 
-test_type = "predcorr"
+test_type = "alignment"
 data_dir = "../bridgetower-brain/data/encodingModels_pipeline"
 
 if test_type == "eval":
@@ -69,3 +69,22 @@ elif test_type == "predcorr":
     encoding_model.load_features()
 
     encoding_model.encoding_pipeline()
+elif test_type == "alignment":
+    train_stim_dir = f"{data_dir}/movie_stim"
+    train_fmri_dir = f"{data_dir}/movie_fmri"
+
+    train_stim_type = "visual"
+
+    test_stim_dir = f"{data_dir}/story_stim"
+    test_fmri_dir = f"{data_dir}/story_fmri"
+
+    feat_dir = "results/features"
+
+    encoding_model = encoding_modelsCLASS.EncodingModels(
+        model_handler, train_stim_dir, train_fmri_dir,
+        train_stim_type, test_stim_dir=test_stim_dir,
+        test_fmri_dir=test_fmri_dir, test_stim_type="language",
+        features_dir=feat_dir
+        )
+
+    encoding_model.alignment()
