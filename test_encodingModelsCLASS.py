@@ -48,13 +48,15 @@ elif test_type == "pred":
 
     encoding_model.encoding_pipeline()
 elif test_type == "predcorr":
-    train_stim_dir = f"{data_dir}/movie_stim"
-    train_fmri_dir = f"{data_dir}/movie_fmri"
+    train_stim_dir = f"{data_dir}/story_stim"
+    train_fmri_dir = f"{data_dir}/story_fmri"
 
-    train_stim_type = "visual"
+    train_stim_type = "language"
 
-    test_stim_dir = f"{data_dir}/story_stim"
-    test_fmri_dir = f"{data_dir}/story_fmri"
+    test_stim_dir = f"{data_dir}/movie_stim"
+    test_fmri_dir = f"{data_dir}/movie_fmri"
+
+    test_stim_type = "visual"
 
     feat_dir = "results/features"
 

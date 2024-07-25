@@ -32,6 +32,8 @@ def create_flatmap(subject, layer):
 
             measure = 'evalcorr'
 
+    print(f"Loaded data from {filepath}")
+    print(f"Data shape: {data.shape}")
     # Reverse flattening and masking with an fmri scan
     fmri_scan = np.load('visual_tools/train_00.npy')
 
