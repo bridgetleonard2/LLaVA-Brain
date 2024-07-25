@@ -477,10 +477,10 @@ class EncodingModels:
             test_correlations = utils.calc_correlation(
                 self.predictions[i], self.test_fmri_arrays[i])
             self.correlations.append(test_correlations)
-            # Take the mean of the correlations
-            self.mean_correlations = np.nanmean(np.stack((test_correlations)),
-                                                axis=0)
-            print("Max correlation:", np.nanmax(self.mean_correlations))
+            print("Max correlation:", np.nanmax(test_correlations))
+        # Take the mean of the correlations
+        self.mean_correlations = np.nanmean(np.stack((self.correlations)),
+                                            axis=0)
 
     def encoding_pipeline(self, alignment=False):
         """The encoding pipeline depends on the kind of data provided."""
