@@ -328,6 +328,8 @@ class EncodingModels:
 
             _ = pipeline.fit(image_features, caption_features)
             self.coef_image_to_caption = backend.to_numpy(pipeline[-1].coef_)
+            print("coef_image_to_caption shape",
+                  self.coef_image_to_caption.shape)
 
             # Check if zeroes in coef_images_to_captions
             num_zeroes_im_to_cap = np.count_nonzero(
