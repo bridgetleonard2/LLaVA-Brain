@@ -15,7 +15,7 @@ if test_type == "eval":
 
     train_stim_type = "language"
 
-    feat_dir = "results/features"
+    feat_dir = f"results/features/{model_handler.layer_name}"
 
     encoding_model = encoding_modelsCLASS.EncodingModels(
         model_handler, train_stim_dir, train_fmri_dir,
@@ -35,7 +35,7 @@ elif test_type == "pred":
 
     test_stim_dir = f"{data_dir}/landscape_stim"
 
-    feat_dir = "results/features"
+    feat_dir = f"results/features/{model_handler.layer_name}"
 
     encoding_model = encoding_modelsCLASS.EncodingModels(
         model_handler, train_stim_dir, train_fmri_dir,
@@ -58,7 +58,7 @@ elif test_type == "predcorr":
 
     test_stim_type = "language"
 
-    feat_dir = "results/features"
+    feat_dir = f"results/features/{model_handler.layer_name}"
 
     encoding_model = encoding_modelsCLASS.EncodingModels(
         model_handler, train_stim_dir, train_fmri_dir,
@@ -80,7 +80,7 @@ elif test_type == "alignment":
     test_stim_dir = f"{data_dir}/story_stim"
     test_fmri_dir = f"{data_dir}/story_fmri"
 
-    feat_dir = "results/features"
+    feat_dir = f"results/features/{model_handler.layer_name}"
 
     encoding_model = encoding_modelsCLASS.EncodingModels(
         model_handler, train_stim_dir, train_fmri_dir,
