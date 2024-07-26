@@ -69,7 +69,8 @@ class ModelHandler:
         self.layer = model_layers[selected_option - 1]
 
         layer_name = model_options[selected_option-1].split(":")[1]
-        layer_name = layer_name.replace(" ", "_")
+        # Remove space before characters and then replace spaces with _
+        layer_name = layer_name.lstrip().replace(" ", "_")
         self.layer_name = layer_name
 
         print(f"Selected layer: {model_options[selected_option-1]}")
