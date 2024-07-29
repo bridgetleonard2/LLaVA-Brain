@@ -15,7 +15,7 @@ Does the model capture well known phenomena (generalize) like the activation of 
 
 <div align="center">
   <img src="/bridgetower_comparisons/layer8_face.png" alt="BridgeTower" style="width:45%; float: left; margin-right: 2%;" />
-  <img src="/results/multi-modal_projector/pred_face.png" alt="LLaVA" style="width:45%; float: left;" />
+  <img src="/results/multi-modal_projector/pred_face.png" alt="LLaVA" style="width:40%; float: left;" />
   <br>
   <i>Using the vision encoding model to predict fMRI responses to faces. BridgeTower (left) vs LLaVA result (right)</i>
 </div>
@@ -26,7 +26,7 @@ Can we see FFA activation more clearly by subtracting out activation induced by 
 
 <div align="center">
   <img src="/bridgetower_comparisons/layer8_FaceMinusLandscape_top.png" alt="BridgeTower" style="width:45%; float: left; margin-right: 2%;" />
-  <img src="/results/multi-modal_projector/faceVSland.png" alt="LLaVA" style="width:45%; float: left;" />
+  <img src="/results/multi-modal_projector/faceVSland.png" alt="LLaVA" style="width:40%; float: left;" />
   <br>
   <i>Using the vision encoding model to predict fMRI responses to faces. BridgeTower (left) vs LLaVA result (right)</i>
 </div>
