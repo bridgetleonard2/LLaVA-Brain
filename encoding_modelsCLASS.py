@@ -165,6 +165,7 @@ class EncodingModels:
                         test_stim_features = (
                             language_features.languageFeatures
                         )
+                    print("saving features", test_stim_features.shape)
 
                     np.save(feat_path, test_stim_features)
 
