@@ -94,7 +94,7 @@ class EncodingModels:
                 fmri_data_clean = utils.remove_nan(fmri_data)
                 self.test_fmri_arrays.append(fmri_data_clean)
 
-    def load_features(self):
+    def load_features(self, n=30):
         self.train_feature_arrays = []
         for i, stim_file in enumerate(self.train_stim_files):
             try:
@@ -108,7 +108,7 @@ class EncodingModels:
                     visual_features = visual_featuresCLASS.VisualFeatures(
                         stim_path, self.model_handler)
                     visual_features.load_image()
-                    visual_features.get_features()
+                    visual_features.get_features(n=n)
                     train_stim_features = visual_features.visualFeatures
                 elif self.train_stim_type == "language":
                     language_features = (
