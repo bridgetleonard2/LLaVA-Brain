@@ -50,7 +50,7 @@ train_fmri_dir = f"{data_dir}/train_fmri"
 
 train_stim_type = "visual"
 
-test_stim_dir = f"{data_dir}/face_stim"
+test_stim_dir = "../bridgetower-brain/data/encodingModels_pipeline/face_stim"
 
 feat_dir = f"results/features/{model_handler.layer_name}"
 
