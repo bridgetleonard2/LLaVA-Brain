@@ -35,8 +35,8 @@ print("remove dead trials; brain data shape:", br_data.shape)
 print("image array shape:", image_array.shape)
 
 # Set up directories
-np.save('data/clip/train_stim/train_01.npy', image_array)
-np.save('data/clip/train_fmri/train_01.npy', br_data)
+np.save('data/clip/train_stim/clip_01.npy', image_array)
+np.save('data/clip/train_fmri/clip_01.npy', br_data)
 
 # Load model
 model_name = 'llava'
@@ -52,7 +52,7 @@ train_stim_type = "visual"
 
 test_stim_dir = "../bridgetower-brain/data/encodingModels_pipeline/face_stim"
 
-feat_dir = f"results/features/{model_handler.layer_name}"
+feat_dir = f"results/features/clip_pipeline/{model_handler.layer_name}"
 
 encoding_model = encoding_modelsCLASS.EncodingModels(
         model_handler, train_stim_dir, train_fmri_dir,
