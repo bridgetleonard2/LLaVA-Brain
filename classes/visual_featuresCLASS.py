@@ -41,10 +41,11 @@ class VisualFeatures:
         self.data_type = path.split('.')[-1]
         self.ModelHandler = ModelHandler
 
-    def load_image(self, data):
+    def load_image(self):
         if self.data_type == "hdf":
             self.stim_data = load_hdf5_array(self.path,
                                              key='stimuli')
+            self.stim_data = np.array(self.stim_data)
         elif self.data_type in ['png', 'jpg', 'jpeg',
                                 'bmp', 'gif']:
             self.stim_data = Image.open(self.path).convert('RGB')
@@ -53,10 +54,9 @@ class VisualFeatures:
             # a single frame movie
             self.stim_data = np.expand_dims(np.array(self.stim_data),
                                             axis=0)
-
-        if self.ModelHandler.model_name == 'llava':
-            # convert list to np.array
             self.stim_data = np.array(self.stim_data)
+        elif self.data_type == "npy":
+            self.stim_data = np.load(self.path)
         print(f"Loaded {self.stim_data.shape} image data")
 
     def get_features(self, batch_size=50, n=30):
