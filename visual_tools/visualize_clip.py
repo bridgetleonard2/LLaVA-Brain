@@ -1,32 +1,42 @@
 import numpy as np
-import cortex
-import argparse
+import cortex  # type: ignore
+import os
 
+import matplotlib.pyplot as plt
 
-def project_vals_to_3d(vals, mask):
-    all_vals = np.zeros(mask.shape)
-    all_vals[mask] = vals
-    all_vals = np.swapaxes(all_vals, 0, 2)
-    return all_vals
+# Check current filestore location
+print("Current filestore:", cortex.database.default_filestore)
 
+# Check configuration file location
+print("User configuration file:", cortex.options.usercfg)
 
-def make_volume(subj):
-    mask = cortex.utils.get_cortical_mask(f"subj{subj:02d}", "func1pt8_to_anat0pt8_autoFSbbr")
-    cortical_mask = np.load(f"../clip2brain/output/voxels_masks/subj{subj}/cortical_mask_subj{subj:02d}.npy")
-    vals = np.load(f"results/multi-modal_projector/subj{subj:02d}.npy")
+# Verify that pycortex is using the correct filestore
+filestore_path = cortex.database.default_filestore
+assert filestore_path == 'nsd_pycortex_db', f"cortex is using {filestore_path}"
 
-    # Projecting values back to 3D space
-    all_vals = project_vals_to_3d(vals, cortical_mask)
+# Check if the transformation file exists
+subject = 'subj01'
+transform_name = 'func1pt8_to_anat0pt8_autoFSbbr'
+transform_file = os.path.join('nsd_pycortex_db', subject, 'transforms',
+                              transform_name, 'matrices.xfm')
 
-    # Creating the volume
-    vol_data = cortex.Volume(all_vals, f"subj{subj:02d}", "func1pt8_to_anat0pt8_autoFSbbr", mask=mask)
-    return vol_data
+# Create the Volume object
+prediction_data = np.load('results/multi-modal_projector/subj01.npy')
+brain_dims = (83, 104, 81)
+prediction_3d = np.zeros(brain_dims)
+mask = np.load("visual_tools/cortical_mask_subj01.npy")
+mask = np.transpose(mask, (2, 1, 0))
+print("Mask shape:", mask.shape)
+print("Prediction shape:", prediction_3d.shape)
+prediction_3d[mask] = prediction_data
 
+# Flatten the data to 2D (example with max projection)
+flat_prediction = np.max(prediction_3d, axis=2)
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Visualize predicted activations on a flatmap.")
-    parser.add_argument("--subj", type=int, required=True, help="Specify the subject number.")
-    args = parser.parse_args()
+vol = cortex.Volume(prediction_3d, subject, transform_name)
 
-    volume = make_volume(args.subj)
-    cortex.webgl.show(data={"Predicted Activations": volume}, recache=False)
+# Create and display the flatmap
+output_png = 'results/multi-modal_projector/subj01_flatmap.png'
+fig = cortex.quickflat.make_png(output_png, vol, with_colorbar=True)
+
+plt.show()
