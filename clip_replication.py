@@ -35,8 +35,16 @@ print("remove dead trials; brain data shape:", br_data.shape)
 print("image array shape:", image_array.shape)
 
 # Set up directories
-np.save('data/clip/train_stim/clip_01.npy', image_array)
-np.save('data/clip/train_fmri/clip_01.npy', br_data)
+# We'll split up the data into batches of 100 saving them as (clip_001.npy...)
+batch_size = 100
+num_batches = (image_array.shape[0] + batch_size - 1) // batch_size
+for i in range(num_batches):
+    start = i * batch_size
+    end = min(image_array.shape[0], (i + 1) * batch_size)
+    np.save('data/clip/train_stim/clip_%03d.npy' % (i + 1),
+            image_array[start:end])
+    np.save('data/clip/train_fmri/clip_%03d.npy' % (i + 1),
+            br_data[start:end])
 
 # Load model
 model_name = 'llava'
@@ -50,14 +58,11 @@ train_fmri_dir = f"{data_dir}/train_fmri"
 
 train_stim_type = "visual"
 
-test_stim_dir = "../bridgetower-brain/data/encodingModels_pipeline/face_stim"
-
 feat_dir = f"results/features/clip_pipeline/{model_handler.layer_name}"
 
 encoding_model = encoding_modelsCLASS.EncodingModels(
         model_handler, train_stim_dir, train_fmri_dir,
-        train_stim_type, test_stim_dir=test_stim_dir,
-        test_stim_type="visual", features_dir=feat_dir
+        train_stim_type, features_dir=feat_dir
         )
 
 encoding_model.load_fmri()
