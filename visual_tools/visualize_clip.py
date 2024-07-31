@@ -37,6 +37,7 @@ vol = cortex.Volume(prediction_3d, subject, transform_name)
 
 # Create and display the flatmap
 output_png = 'results/multi-modal_projector/subj01_flatmap.png'
-fig = cortex.quickflat.make_png(output_png, vol, with_colorbar=True)
+fig = cortex.quickflat.make_png(output_png, vol, with_colorbar=True,
+                                bgcolor='white')
 
 plt.show()
