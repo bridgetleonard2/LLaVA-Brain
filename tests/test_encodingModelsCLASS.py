@@ -1,5 +1,5 @@
 from classes import model_handlerCLASS
-import encoding_modelsCLASS
+import classes.encoding_modelsCLASS as encoding_modelsCLASS
 
 model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)

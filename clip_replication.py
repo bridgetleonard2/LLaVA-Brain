@@ -1,6 +1,6 @@
 import numpy as np
 from classes import model_handlerCLASS
-import encoding_modelsCLASS
+import classes.encoding_modelsCLASS as encoding_modelsCLASS
 from PIL import Image
 
 # run get_pairs.sh first

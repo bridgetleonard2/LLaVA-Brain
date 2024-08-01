@@ -35,8 +35,14 @@ class EncodingModels:
         self.features_dir = features_dir
 
         # Prep files
-        self.train_stim_files = os.listdir(train_stim_dir)
-        self.train_fmri_files = os.listdir(train_fmri_dir)
+        # files_only = [f for f in os.listdir(directory_path) if
+        # os.path.isfile(os.path.join(directory_path, f))]
+        self.train_stim_files = [f for f in os.listdir(train_stim_dir) if
+                                 os.path.isfile(os.path.join(train_stim_dir,
+                                                             f))]
+        self.train_fmri_files = [f for f in os.listdir(train_fmri_dir) if
+                                 os.path.isfile(os.path.join(train_fmri_dir,
+                                                             f))]
 
         # Check rules
         if len(self.train_stim_files) != len(self.train_fmri_files):
@@ -55,10 +61,14 @@ class EncodingModels:
         # Can have just test_stim
         if test_stim_dir:
             # Prep files
-            self.test_stim_files = os.listdir(test_stim_dir)
+            self.test_stim_files = [f for f in os.listdir(test_stim_dir) if
+                                    os.path.isfile(os.path.join(test_stim_dir,
+                                                                f))]
             if test_fmri_dir:
                 # Prep files
-                self.test_fmri_files = os.listdir(test_fmri_dir)
+                self.test_fmri_files = [f for f in os.listdir(test_fmri_dir) if
+                                        os.path.isfile(os.path.join(
+                                            test_fmri_dir, f))]
 
                 # Check rules
                 if len(self.test_stim_files) != len(self.test_fmri_files):
