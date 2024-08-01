@@ -75,4 +75,4 @@ encoding_model = encoding_modelsCLASS.EncodingModels(
 encoding_model.load_fmri()
 encoding_model.load_features(n=1)
 
-encoding_model.encoding_pipeline()
+encoding_model.encoding_pipeline(cv=5)
