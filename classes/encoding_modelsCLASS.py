@@ -164,7 +164,7 @@ class EncodingModels:
                         visual_features = visual_featuresCLASS.VisualFeatures(
                             stim_path, self.model_handler)
                         visual_features.load_image()
-                        visual_features.get_features()
+                        visual_features.get_features(n=n)
                         test_stim_features = visual_features.visualFeatures
                     elif self.test_stim_type == "language":
                         language_features = (
