@@ -1,6 +1,7 @@
 import numpy as np
 from classes import model_handlerCLASS
 import classes.encoding_modelsCLASS as encoding_modelsCLASS
+from sklearn.model_selection import train_test_split
 from PIL import Image
 
 # run get_pairs.sh first
@@ -34,17 +35,20 @@ image_array = image_array[trial_mask, :, :, :]
 print("remove dead trials; brain data shape:", br_data.shape)
 print("image array shape:", image_array.shape)
 
+X_train, X_test, y_train, y_test = train_test_split(
+        image_array, br_data, test_size=0.15, random_state=42)
+
 # Set up directories
 # We'll split up the data into test and train set 70/30
-np.save('data/clip/train_stim/clip_70.npy',
-        image_array[:int(0.7 * len(image_array))])
-np.save('data/clip/train_fmri/clip_70.npy',
-        br_data[:int(0.7 * len(br_data))])
+np.save('data/clip/train_stim/clip_85.npy',
+        X_train)
+np.save('data/clip/train_fmri/clip_85.npy',
+        y_train)
 
 np.save('data/clip/test_stim/clip_30.npy',
-        image_array[int(0.7 * len(image_array)):])
+        X_test)
 np.save('data/clip/test_fmri/clip_30.npy',
-        br_data[int(0.7 * len(br_data)):])
+        y_test)
 
 # Load model
 model_name = 'llava'
