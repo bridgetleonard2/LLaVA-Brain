@@ -8,7 +8,6 @@ from himalaya.backend import set_backend  # type: ignore
 from sklearn.base import BaseEstimator, TransformerMixin
 from himalaya.ridge import RidgeCV  # type: ignore
 from sklearn.pipeline import make_pipeline
-import torch
 
 
 def resample_to_acq(feature_data, fmri_data_shape):
@@ -213,7 +212,7 @@ def set_pipeline(feature_arrays, cv=None):
             current_index = next_index
 
         print(run_onsets)
-        n_samples_train = np.vstack(feature_arrays).shape[2]
+        n_samples_train = np.vstack(feature_arrays).shape[0]
         cv = generate_leave_one_run_out(n_samples_train, run_onsets)
         cv = check_cv(cv)  # cross-validation splitter into a reusable list
 
@@ -224,12 +223,7 @@ def set_pipeline(feature_arrays, cv=None):
     print(backend)
 
     print("Number of features:", np.array(feature_arrays).shape[2])
-    tol = 8
-    alphas = torch.from_numpy(
-        np.logspace(
-            -tol, 1 / 2 * np.log10(np.array(feature_arrays).shape[0]) + tol,
-            100)
-    )
+    alphas = np.logspace(-8, 10, 100)
 
     ridge_cv = RidgeCV(
                 alphas=alphas,
