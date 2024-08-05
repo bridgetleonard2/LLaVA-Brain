@@ -223,11 +223,11 @@ def set_pipeline(feature_arrays, cv=None):
     backend = set_backend("torch_cuda", on_error="warn")
     print(backend)
 
-    print("Number of features:", np.array(feature_arrays).shape[1])
+    print("Number of features:", np.array(feature_arrays).shape[0])
     tol = 8
     alphas = torch.from_numpy(
         np.logspace(
-            -tol, 1 / 2 * np.log10(np.array(feature_arrays).shape[1]) + tol,
+            -tol, 1 / 2 * np.log10(np.array(feature_arrays).shape[0]) + tol,
             100)
     )
 
