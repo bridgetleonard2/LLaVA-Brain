@@ -213,7 +213,7 @@ def set_pipeline(feature_arrays, cv=None):
             current_index = next_index
 
         print(run_onsets)
-        n_samples_train = np.vstack(feature_arrays).shape[0]
+        n_samples_train = np.vstack(feature_arrays).shape[2]
         cv = generate_leave_one_run_out(n_samples_train, run_onsets)
         cv = check_cv(cv)  # cross-validation splitter into a reusable list
 
@@ -223,7 +223,7 @@ def set_pipeline(feature_arrays, cv=None):
     backend = set_backend("torch_cuda", on_error="warn")
     print(backend)
 
-    print("Number of features:", np.array(feature_arrays).shape[0])
+    print("Number of features:", np.array(feature_arrays).shape[2])
     tol = 8
     alphas = torch.from_numpy(
         np.logspace(
