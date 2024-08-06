@@ -10,10 +10,10 @@ data_dir = "../bridgetower-brain/data/encodingModels_pipeline"
 
 if test_type == "eval":
     # vision model evaluate to start
-    train_stim_dir = f"{data_dir}/story_stim"
-    train_fmri_dir = f"{data_dir}/story_fmri"
+    train_stim_dir = f"{data_dir}/movie_stim"
+    train_fmri_dir = f"{data_dir}/movie_fmri"
 
-    train_stim_type = "language"
+    train_stim_type = "visual"
 
     feat_dir = f"results/features/{model_handler.layer_name}"
 
