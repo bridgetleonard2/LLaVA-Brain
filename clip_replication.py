@@ -45,9 +45,9 @@ np.save('data/clip/train_stim/clip_85.npy',
 np.save('data/clip/train_fmri/clip_85.npy',
         y_train)
 
-np.save('data/clip/test_stim/clip_30.npy',
+np.save('data/clip/test_stim/clip_15.npy',
         X_test)
-np.save('data/clip/test_fmri/clip_30.npy',
+np.save('data/clip/test_fmri/clip_15.npy',
         y_test)
 
 # Load model
