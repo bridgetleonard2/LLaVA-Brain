@@ -34,34 +34,16 @@ def create_flatmap(subject, layer):
 
     print(f"Loaded data from {filepath}")
     print(f"Data shape: {data.shape}")
-    # Reverse flattening and masking with an fmri scan
-    fmri_scan = np.load('visual_tools/train_00.npy')
-
-    mask = ~np.isnan(fmri_scan[0])
-
-    # Initialize empty array for reconstruction
-    reconstructed_data = np.full((31, 100, 100), np.nan)
-
-    # Flatten the mask to get the indices of the non-NaN data points
-    valid_indices = np.where(mask.flatten())[0]
-
-    # Assign the data points to their original spatial positions
-    for index, value in zip(valid_indices, data):
-        # convert 1D index back to 3D index
-        z, x, y = np.unravel_index(index, (31, 100, 100))
-        reconstructed_data[z, x, y] = value
-
-    flattened_data = reconstructed_data.flatten()
 
     # Load mappers
     map_dir = "../BridgeTower-Brain/data/fmri_data/mappers"
 
     lh_mapping_matrix = load_npz(f"{map_dir}/{subject}_listening_forVL_lh.npz")
-    lh_vertex_data = lh_mapping_matrix @ flattened_data
+    lh_vertex_data = lh_mapping_matrix @ data
     lh_vertex_coords = np.load(f"{map_dir}/{subject}_vertex_coords_lh.npy")
 
     rh_mapping_matrix = load_npz(f"{map_dir}/{subject}_listening_forVL_rh.npz")
-    rh_vertex_data = rh_mapping_matrix @ flattened_data
+    rh_vertex_data = rh_mapping_matrix @ data
     rh_vertex_coords = np.load(f"{map_dir}/{subject}_vertex_coords_rh.npy")
 
     # set vmin, vmax based on measure type

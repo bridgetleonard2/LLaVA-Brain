@@ -240,7 +240,11 @@ class EncodingModels:
             print("(n_delays * n_features, n_voxels) =", coef.shape)
 
             # Regularize coefficients
-            coef /= np.linalg.norm(coef, axis=0)[None]
+            # coef /= np.linalg.norm(coef, axis=0)[None]
+            # Regularize coefficients
+            norm = np.linalg.norm(coef, axis=0)
+            norm[norm == 0] = 1  # Avoid division by zero
+            coef /= norm[None]
 
             # split the ridge coefficients per delays
             delayer = pipeline.named_steps['delayer']
