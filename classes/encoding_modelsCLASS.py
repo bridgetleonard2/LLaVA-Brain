@@ -93,6 +93,8 @@ class EncodingModels:
             fmri_path = os.path.join(self.train_fmri_dir, fmri_file)
             fmri_data = np.load(fmri_path)
             fmri_data_clean = np.nan_to_num(fmri_data)
+            fmri_data_clean = fmri_data_clean.reshape(
+                fmri_data_clean.shape[0], -1)
             print('fmri_data_clean shape:', fmri_data_clean.shape)
             self.train_fmri_arrays.append(fmri_data_clean)
 
@@ -103,6 +105,8 @@ class EncodingModels:
                 fmri_path = os.path.join(self.test_fmri_dir, fmri_file)
                 fmri_data = np.load(fmri_path)
                 fmri_data_clean = np.nan_to_num(fmri_data)
+                fmri_data_clean = fmri_data_clean.reshape(
+                    fmri_data_clean.shape[0], -1)
                 print('fmri_data_clean shape:', fmri_data_clean.shape)
                 self.test_fmri_arrays.append(fmri_data_clean)
 
