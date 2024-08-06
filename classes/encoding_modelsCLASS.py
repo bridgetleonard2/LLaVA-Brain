@@ -240,11 +240,7 @@ class EncodingModels:
             print("(n_delays * n_features, n_voxels) =", coef.shape)
 
             # Regularize coefficients
-            # coef /= np.linalg.norm(coef, axis=0)[None]
-            # Regularize coefficients
-            norm = np.linalg.norm(coef, axis=0)
-            norm[norm == 0] = 1  # Avoid division by zero
-            coef /= norm[None]
+            coef /= np.linalg.norm(coef, axis=0)[None]
 
             # split the ridge coefficients per delays
             delayer = pipeline.named_steps['delayer']
@@ -256,6 +252,12 @@ class EncodingModels:
             average_coef = np.mean(coef_per_delay, axis=0)
             print("(n_features, n_voxels) =", average_coef.shape)
             del coef_per_delay
+
+            # check if any coef are zero or nan
+            num_zeroes = np.count_nonzero(average_coef == 0)
+            print("coef zeros:", num_zeroes)
+            num_nan = np.count_nonzero(np.isnan(average_coef))
+            print("coef nans:", num_nan)
 
             # Test the model
             X_test = self.train_feature_arrays[i]
