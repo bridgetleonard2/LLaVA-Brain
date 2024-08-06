@@ -92,7 +92,8 @@ class EncodingModels:
         for fmri_file in self.train_fmri_files:
             fmri_path = os.path.join(self.train_fmri_dir, fmri_file)
             fmri_data = np.load(fmri_path)
-            fmri_data_clean = utils.remove_nan(fmri_data)
+            fmri_data_clean = np.nan_to_num(fmri_data)
+            print('fmri_data_clean shape:', fmri_data_clean.shape)
             self.train_fmri_arrays.append(fmri_data_clean)
 
         # Only load the test data if test stim provided
@@ -101,7 +102,8 @@ class EncodingModels:
             for fmri_file in self.test_fmri_files:
                 fmri_path = os.path.join(self.test_fmri_dir, fmri_file)
                 fmri_data = np.load(fmri_path)
-                fmri_data_clean = utils.remove_nan(fmri_data)
+                fmri_data_clean = np.nan_to_num(fmri_data)
+                print('fmri_data_clean shape:', fmri_data_clean.shape)
                 self.test_fmri_arrays.append(fmri_data_clean)
 
     def load_features(self, n=30):

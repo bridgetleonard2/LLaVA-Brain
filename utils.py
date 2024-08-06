@@ -6,7 +6,7 @@ from sklearn.utils.validation import (
     check_random_state, check_is_fitted, check_array)
 from himalaya.backend import set_backend  # type: ignore
 from sklearn.base import BaseEstimator, TransformerMixin
-from himalaya.ridge import RidgeCV  # type: ignore
+from himalaya.kernel_ridge import KernelRidgeCV  # type: ignore
 from sklearn.pipeline import make_pipeline
 
 
@@ -21,17 +21,6 @@ def resample_to_acq(feature_data, fmri_data_shape):
 
     print("Shape after resampling:", data_resampled.shape)
     return data_resampled
-
-
-def remove_nan(data):
-    mask = ~np.isnan(data)
-
-    # Apply the mask and then flatten
-    # This will keep only the non-NaN values
-    data_reshaped = data[mask].reshape(data.shape[0], -1)
-
-    print("fMRI shape:", data_reshaped.shape)
-    return data_reshaped
 
 
 def generate_leave_one_run_out(n_samples, run_onsets, random_state=None,
@@ -225,7 +214,7 @@ def set_pipeline(feature_arrays, cv=None):
     print("Number of features:", np.array(feature_arrays).shape[2])
     alphas = np.logspace(-8, 10, 100)
 
-    ridge_cv = RidgeCV(
+    kernel_ridge_cv = KernelRidgeCV(
                 alphas=alphas,
                 cv=cv,
                 solver_params=dict(
@@ -235,7 +224,7 @@ def set_pipeline(feature_arrays, cv=None):
     pipeline = make_pipeline(
         scaler,
         delayer,
-        ridge_cv,
+        kernel_ridge_cv,
     )
 
     return pipeline, backend
