@@ -211,7 +211,6 @@ def set_pipeline(feature_arrays, cv=None):
     backend = set_backend("torch_cuda", on_error="warn")
     print(backend)
 
-    print("Number of features:", np.array(feature_arrays).shape[2])
     alphas = np.logspace(-8, 10, 100)
 
     kernel_ridge_cv = KernelRidgeCV(
