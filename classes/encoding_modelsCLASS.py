@@ -235,7 +235,7 @@ class EncodingModels:
 
             _ = pipeline.fit(X_train, Y_train)
 
-            coef = pipeline[-1].dual_coef_
+            coef = pipeline[-1].get_primal_coef()
             coef = backend.to_numpy(coef)
             print("(n_delays * n_features, n_voxels) =", coef.shape)
 
@@ -344,7 +344,7 @@ class EncodingModels:
             pipeline
 
             _ = pipeline.fit(image_features, caption_features)
-            coef_im_cap = backend.to_numpy(pipeline[-1].dual_coef_)
+            coef_im_cap = backend.to_numpy(pipeline[-1].get_primal_coef())
 
             print("coef_image_to_caption shape",
                   coef_im_cap.shape)
@@ -390,7 +390,7 @@ class EncodingModels:
             np.save(im_to_cap_path, self.coef_image_to_caption)
 
             _ = pipeline.fit(caption_features, image_features)
-            coef_cap_im = backend.to_numpy(pipeline[-1].dual_coef_)
+            coef_cap_im = backend.to_numpy(pipeline[-1].get_primal_coef())
 
             # Check if zeroes in coef_captions_to_images
             num_zeroes_cap_to_im = np.count_nonzero(
@@ -448,7 +448,7 @@ class EncodingModels:
 
         _ = pipeline.fit(X_train, Y_train)
 
-        coef = pipeline[-1].dual_coef_
+        coef = pipeline[-1].get_primal_coef()
         coef = backend.to_numpy(coef)
         print("(n_delays * n_features, n_voxels) =", coef.shape)
         # Get encoding model from coefficients
