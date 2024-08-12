@@ -22,13 +22,11 @@ transform_file = os.path.join('nsd_pycortex_db', subject, 'transforms',
 
 # Create the Volume object
 prediction_data = np.load(
-    'results/multi-modal_projector/pred_correlations.npy')
+    'results/vision_tower/subj01.npy'
+    )
 
 # take absolute value of prediction data
 prediction_data = np.abs(prediction_data)
-
-# keep only results over 0.05
-prediction_data[prediction_data < 0.05] = 0
 
 brain_dims = (81, 104, 83)
 prediction_3d = np.zeros(brain_dims)
@@ -46,7 +44,8 @@ flat_prediction = np.max(prediction_3d, axis=2)
 vol = cortex.Volume(prediction_3d, subject, transform_name, cmap="inferno")
 
 # Create and display the flatmap
-output_png = 'results/multi-modal_projector/subj01_8515_flatmap.png'
+output_name = 'vision_subj01'
+output_png = f'results/vision_tower/{output_name}.png'
 fig = cortex.quickflat.make_png(output_png, vol, with_colorbar=True,
                                 bgcolor='white')
 
