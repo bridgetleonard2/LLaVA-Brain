@@ -7,6 +7,8 @@ from datasets import load_dataset  # type: ignore
 
 import utils
 
+flatten = False
+
 
 class EncodingModels:
     def __init__(self, model_handler, train_stim_dir, train_fmri_dir,
@@ -146,7 +148,11 @@ class EncodingModels:
             # if features are >2 dimensions, average across the
             # second dimension
             if len(train_stim_features.shape) > 2:
-                train_stim_features = np.mean(train_stim_features, axis=1)
+                if flatten:
+                    train_stim_features = train_stim_features.reshape(
+                        train_stim_features.shape[0], -1)
+                else:
+                    train_stim_features = np.mean(train_stim_features, axis=1)
                 print("new features shape", train_stim_features.shape)
 
             if train_stim_features.shape[0] != train_fmri_shape[0]:
@@ -194,8 +200,12 @@ class EncodingModels:
                     # if features are >2 dimensions, average across the second
                     # dimension
                     if len(test_stim_features.shape) > 2:
-                        test_stim_features = np.mean(test_stim_features,
-                                                     axis=1)
+                        if flatten:
+                            test_stim_features = test_stim_features.reshape(
+                                test_stim_features.shape[0], -1)
+                        else:
+                            test_stim_features = np.mean(test_stim_features,
+                                                         axis=1)
                         print("new features shape", test_stim_features.shape)
 
                     fmri_shape = self.test_fmri_arrays[i].shape
@@ -230,7 +240,10 @@ class EncodingModels:
 
             # if X_train > 2 dimensions, average across the second dimension
             if len(X_train.shape) > 2:
-                X_train = np.mean(X_train, axis=1)
+                if flatten:
+                    X_train = X_train.reshape(X_train.shape[0], -1)
+                else:
+                    X_train = np.mean(X_train, axis=1)
                 print("X_train shape", X_train.shape)
 
             _ = pipeline.fit(X_train, Y_train)
@@ -265,7 +278,10 @@ class EncodingModels:
 
             # if X_test > 2 dimensions, average across the second dimension
             if len(X_test.shape) > 2:
-                X_test = np.mean(X_test, axis=1)
+                if flatten:
+                    X_test = X_test.reshape(X_test.shape[0], -1)
+                else:
+                    X_test = np.mean(X_test, axis=1)
                 print("X_test shape", X_test.shape)
             print("Y_test shape:", Y_test.shape)
 
@@ -338,8 +354,14 @@ class EncodingModels:
             # Data should be 2d of shape (n_images/n, num_features)
             # if data is above 2d, average 2nd+ dimensions
             if caption_features.ndim > 2:
-                caption_features = np.mean(caption_features, axis=1)
-                image_features = np.mean(image_features, axis=1)
+                if flatten:
+                    caption_features = caption_features.reshape(
+                        caption_features.shape[0], -1)
+                    image_features = image_features.reshape(
+                        image_features.shape[0], -1)
+                else:
+                    caption_features = np.mean(caption_features, axis=1)
+                    image_features = np.mean(image_features, axis=1)
 
             print("image features shape", image_features.shape)
             print("caption features shape", caption_features.shape)
@@ -449,7 +471,10 @@ class EncodingModels:
 
         # if X_train > 2 dimensions, average across the second dimension
         if len(X_train.shape) > 2:
-            X_train = np.mean(X_train, axis=1)
+            if flatten:
+                X_train = X_train.reshape(X_train.shape[0], -1)
+            else:
+                X_train = np.mean(X_train, axis=1)
             print("X_train shape", X_train.shape)
 
         _ = pipeline.fit(X_train, Y_train)
@@ -488,7 +513,10 @@ class EncodingModels:
 
             # if X_test > 2 dimensions, average across the second dimension
             if len(X_test.shape) > 2:
-                X_test = np.mean(X_test, axis=1)
+                if flatten:
+                    X_test = X_test.reshape(X_test.shape[0], -1)
+                else:
+                    X_test = np.mean(X_test, axis=1)
                 print("X_test shape", X_test.shape)
 
             Y_pred = np.dot(X_test, self.encoding_model)
