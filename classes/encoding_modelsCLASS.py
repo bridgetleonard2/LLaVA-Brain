@@ -3,7 +3,6 @@ import numpy as np
 from classes import visual_featuresCLASS
 from classes import language_featuresCLASS
 from sklearn import set_config
-from sklearn.preprocessing import StandardScaler
 from datasets import load_dataset  # type: ignore
 
 import utils
@@ -503,7 +502,7 @@ class EncodingModels:
         Y_train = np.vstack(self.train_fmri_arrays)
 
         self.pipeline, backend = utils.set_pipeline(self.train_feature_arrays,
-                                               cv=cv)
+                                                    cv=cv)
 
         set_config(display='diagram')  # requires scikit-learn 0.23
         self.pipeline
@@ -567,6 +566,10 @@ class EncodingModels:
             Y_pred = self.pipeline.predict(X_test)
             self.predictions.append(Y_pred)
 
+        # convert tensors to numpy arrays
+        self.predictions = [
+            pred.detach().cpu().numpy() for pred in self.predictions]
+
     def correlate(self):
         """Calculate the correlation and R-squared between predicted
         and actual fMRI data.
@@ -588,6 +591,9 @@ class EncodingModels:
             self.r_squared.append(test_r2)
             print("Max correlation:", np.nanmax(test_correlations))
             print("Max R-squared:", np.nanmax(test_r2))
+
+        # Convert r2 to numpy array
+        self.r_squared = [r2.detach().cpu().numpy() for r2 in self.r_squared]
 
         # Take the mean of the correlations
         self.mean_correlations = np.nanmean(
