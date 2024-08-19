@@ -64,7 +64,7 @@ train_stim_type = "visual"
 
 test_dir = '../bridgetower-brain/data/encodingModels_pipeline'
 
-test_stim_dir = f"{test_dir}/landscape_stim"
+test_stim_dir = f"{test_dir}/face_stim"
 # test_fmri_dir = f"{data_dir}/test_fmri"
 
 test_stim_type = "visual"
