@@ -566,18 +566,36 @@ class EncodingModels:
             self.predictions.append(Y_pred)
 
     def correlate(self):
-        """Calculate the correlation between predicted and actual fMRI data.
+        """Calculate the correlation and R-squared between predicted
+        and actual fMRI data.
 
         Done when both test_stim_data and test_fmri_data are provided."""
         self.correlations = []
+        self.r_squared = []
+
         for i in range(len(self.predictions)):
+            # Calculate the correlation
             test_correlations = utils.calc_correlation(
                 self.predictions[i], self.test_fmri_arrays[i])
             self.correlations.append(test_correlations)
             print("Max correlation:", np.nanmax(test_correlations))
+
+            # Calculate R-squared
+            ss_res = np.nansum((
+                self.test_fmri_arrays[i] - self.predictions[i]) ** 2)
+            ss_tot = np.nansum((
+                self.test_fmri_arrays[i] - np.nanmean(
+                    self.test_fmri_arrays[i])) ** 2)
+            r2 = 1 - (ss_res / ss_tot)
+            self.r_squared.append(r2)
+            print("R-squared:", r2)
+
         # Take the mean of the correlations
-        self.mean_correlations = np.nanmean(np.stack((self.correlations)),
-                                            axis=0)
+        self.mean_correlations = np.nanmean(
+            np.stack((self.correlations)), axis=0)
+        # Take the mean of the R-squared values
+        self.mean_r_squared = np.nanmean(self.r_squared)
+        print("Mean R-squared:", self.mean_r_squared)
 
     def encoding_pipeline(self, alignment=False, cv=None):
         """The encoding pipeline depends on the kind of data provided."""
@@ -606,7 +624,7 @@ class EncodingModels:
                 self.correlate()
 
                 # Output is the correlations
-                self.output = self.mean_correlations
+                self.output = self.mean_r_squared
 
                 file_name = 'pred_correlations.npy'
                 file_path = os.path.join(directory, file_name)
