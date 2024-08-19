@@ -580,13 +580,16 @@ class EncodingModels:
             self.correlations.append(test_correlations)
             print("Max correlation:", np.nanmax(test_correlations))
 
-            # Calculate R-squared
-            ss_res = np.nansum((
-                self.test_fmri_arrays[i] - self.predictions[i]) ** 2)
-            ss_tot = np.nansum((
-                self.test_fmri_arrays[i] - np.nanmean(
-                    self.test_fmri_arrays[i])) ** 2)
-            r2 = 1 - (ss_res / ss_tot)
+            # Filter out NaNs from both predictions and actual data
+            valid_mask = ~np.isnan(self.test_fmri_arrays[i]) & ~np.isnan(
+                self.predictions[i])
+            valid_predictions = self.predictions[i][valid_mask]
+            valid_fmri = self.test_fmri_arrays[i][valid_mask]
+
+            # Calculate R-squared only for valid data
+            ss_res = np.nansum((valid_fmri - valid_predictions) ** 2)
+            ss_tot = np.nansum((valid_fmri - np.nanmean(valid_fmri)) ** 2)
+            r2 = 1 - (ss_res / ss_tot) if ss_tot != 0 else np.nan
             self.r_squared.append(r2)
             print("R-squared:", r2)
 
