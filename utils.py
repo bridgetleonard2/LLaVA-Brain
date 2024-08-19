@@ -265,16 +265,8 @@ def calc_corr_r2(predicted_fMRI, real_fMRI):
                                 range(predicted_fMRI.shape[1])]
     correlation_coefficients = np.array(correlation_coefficients)
 
-    # Calculate R^2 for each voxel
-    r_squared = [safe_r_squared(real_fMRI[:, i],
-                                predicted_fMRI[:, i]) for i in
-                 range(predicted_fMRI.shape[1])]
-    r_squared = np.array(r_squared)
-
     # Check for NaNs in the result
     nans_in_correlations = np.isnan(correlation_coefficients).any()
     print(f"NaNs in correlation coefficients: {nans_in_correlations}")
-    nans_in_r_squared = np.isnan(r_squared).any()
-    print(f"NaNs in R^2: {nans_in_r_squared}")
 
-    return correlation_coefficients, r_squared
+    return correlation_coefficients

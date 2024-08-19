@@ -502,11 +502,11 @@ class EncodingModels:
         X_train = np.vstack(self.train_feature_arrays)
         Y_train = np.vstack(self.train_fmri_arrays)
 
-        pipeline, backend = utils.set_pipeline(self.train_feature_arrays,
+        self.pipeline, backend = utils.set_pipeline(self.train_feature_arrays,
                                                cv=cv)
 
         set_config(display='diagram')  # requires scikit-learn 0.23
-        pipeline
+        self.pipeline
 
         X_train = X_train.astype(np.float32)
 
@@ -518,17 +518,16 @@ class EncodingModels:
                 X_train = np.mean(X_train, axis=1)
             print("X_train shape", X_train.shape)
 
-        _ = pipeline.fit(X_train, Y_train)
-        self.scaler = pipeline.named_steps['scaler']
+        _ = self.pipeline.fit(X_train, Y_train)
 
-        coef = pipeline[-1].get_primal_coef()
+        coef = self.pipeline[-1].get_primal_coef()
         coef = backend.to_numpy(coef)
         print("(n_delays * n_features, n_voxels) =", coef.shape)
         # Get encoding model from coefficients
         # Regularize coefficients
         coef /= np.linalg.norm(coef, axis=0)[None]
 
-        delayer = pipeline.named_steps['delayer']
+        delayer = self.pipeline.named_steps['delayer']
         coef_per_delay = delayer.reshape_by_delays(coef, axis=0)
         print("(n_delays, n_features, n_voxels) =", coef_per_delay.shape)
 
@@ -553,10 +552,6 @@ class EncodingModels:
                     np.dot(X, self.coef_caption_to_image.T) for X
                     in self.test_feature_arrays]
 
-        # Use self.scaler to transform x_test
-        self.test_feature_arrays = [self.scaler.transform(X) for X
-                                    in self.test_feature_arrays]
-
         self.predictions = []
         for i in range(len(self.test_feature_arrays)):
             X_test = self.test_feature_arrays[i]
@@ -569,7 +564,7 @@ class EncodingModels:
                     X_test = np.mean(X_test, axis=1)
                 print("X_test shape", X_test.shape)
 
-            Y_pred = np.dot(X_test, self.encoding_model)
+            Y_pred = self.pipeline.predict(X_test)
             self.predictions.append(Y_pred)
 
     def correlate(self):
@@ -584,16 +579,12 @@ class EncodingModels:
 
         for i in range(len(self.predictions)):
             # Calculate the correlation
-            print("check scale")
-            print("predictions mean, sd", np.mean(self.predictions[i]),
-                  np.std(self.predictions[i]))
-            print("test_fmri mean, sd", np.mean(self.test_fmri_arrays[i]),
-                  np.std(self.test_fmri_arrays[i]))
-            print("train_fmri mean, sd", np.mean(self.train_fmri_arrays[i]),
-                  np.std(self.train_fmri_arrays[i]))
-            test_correlations, test_r2 = utils.calc_corr_r2(
+            test_correlations = utils.calc_corr(
                 self.predictions[i], self.test_fmri_arrays[i])
             self.correlations.append(test_correlations)
+
+            test_r2 = self.pipeline.score(self.test_feature_arrays[i],
+                                          self.test_fmri_arrays[i])
             self.r_squared.append(test_r2)
             print("Max correlation:", np.nanmax(test_correlations))
             print("Max R-squared:", np.nanmax(test_r2))
