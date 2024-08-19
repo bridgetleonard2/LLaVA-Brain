@@ -15,8 +15,25 @@ class EncodingModels:
                  train_stim_type, test_stim_dir=None, test_fmri_dir=None,
                  test_stim_type=None, features_dir=None):
         """Initialize the EncodingModels class.
+        model_handler (ModelHandler): ModelHandler object with the model.
+
         train_stim_dir (str): Path to the directory with training stimuli.
         train_fmri_dir (str): Path to the directory with training fMRI data.
+
+        train_stim_type (str): Type of training stimuli. Can be "visual" or
+        "language".
+
+        test_stim_dir (str): Path to the directory with test stimuli.
+        Default is None.
+
+        test_fmri_dir (str): Path to the directory with test fMRI data. Default
+        is None.
+
+        test_stim_type (str): Type of test stimuli. Can be "visual" or
+        "language". Default is None.
+
+        features_dir (str): Path to the directory with features.
+        Default is None.
 
         len(train_stim_dir) == len(train_fmri_dir)
         Order of files in train_fmri_dir and train_fmri_dir must match.
@@ -90,6 +107,9 @@ class EncodingModels:
                             )
 
     def load_fmri(self):
+        """Load the fMRI data.
+
+        Turns nan values to 0 and reshapes the data to 2D."""
         self.train_fmri_arrays = []
         for fmri_file in self.train_fmri_files:
             fmri_path = os.path.join(self.train_fmri_dir, fmri_file)
@@ -113,6 +133,12 @@ class EncodingModels:
                 self.test_fmri_arrays.append(fmri_data_clean)
 
     def load_features(self, n=30):
+        """Load the features.
+
+        If features don't exist, they are created and saved.
+
+        n (int): specifies the number of items to average features for.
+        Default is 30 to mimic 30 frames per second."""
         self.train_feature_arrays = []
         for i, stim_file in enumerate(self.train_stim_files):
             try:
@@ -220,7 +246,10 @@ class EncodingModels:
 
     def evaluate(self):
         """Evaluate the encoding models using leave-one-run-out
-        cross-validation."""
+        cross-validation.
+
+        If only test and train data is given, the model is built and
+        evaluated with leave-one-run-out cross-validation."""
         self.correlations = []
 
         for i in range(len(self.train_feature_arrays)):
@@ -298,6 +327,12 @@ class EncodingModels:
             self.correlations.append(test_correlations)
 
     def alignment(self):
+        """Align the features and fMRI data.
+        If train_stim_type != test_stim_type, alignment is needed.
+
+        This accounts for the linear transformation between the
+        two types of data. This allows us to project one type of
+        data into the other's space."""
         # try loading alignment
         im_to_cap_filename = (f"{self.model_handler.layer_name}"
                               "_im_to_cap_alignment.npy")
@@ -456,7 +491,12 @@ class EncodingModels:
             np.save(cap_to_im_path, self.coef_caption_to_image)
 
     def build(self, cv=None):
-        """Build the encoding model."""
+        """Build the encoding model.
+
+        cv (int): Number of cross-validation folds. Default is None.
+        If None, the cv is built on when each data set starts and ends
+        (i.e., movie data start/ends)."""
+
         print("Building encoding model using all training data")
         X_train = np.vstack(self.train_feature_arrays)
         Y_train = np.vstack(self.train_fmri_arrays)
@@ -496,7 +536,10 @@ class EncodingModels:
         self.encoding_model = average_coef
 
     def predict(self, alignment=False):
-        """Predict fMRI data using the encoding model."""
+        """Predict fMRI data using the encoding model.
+
+        If test_stim_data is given but not test_fmri_data, the model
+        will predict the fMRI data."""
         if alignment:
             self.alignment()
             if self.test_stim_type == "visual":
@@ -523,7 +566,9 @@ class EncodingModels:
             self.predictions.append(Y_pred)
 
     def correlate(self):
-        """Calculate the correlation between predicted and actual fMRI data."""
+        """Calculate the correlation between predicted and actual fMRI data.
+
+        Done when both test_stim_data and test_fmri_data are provided."""
         self.correlations = []
         for i in range(len(self.predictions)):
             test_correlations = utils.calc_correlation(

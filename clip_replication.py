@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from PIL import Image
 
 # run get_pairs.sh first
-subj = 1
+subj = 5
 project_dir = '../clip2brain'
 project_output_dir = 'output'
 
@@ -80,6 +80,9 @@ encoding_model = encoding_modelsCLASS.EncodingModels(
         )
 
 encoding_model.load_fmri()
+# loading each image individually so n = 1 (no grouping/average)
 encoding_model.load_features(n=1)
 
+# don't need to create cv based on movie start/end
+# set cv manually to match clip paper
 encoding_model.encoding_pipeline(cv=7)
