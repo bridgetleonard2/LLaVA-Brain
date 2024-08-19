@@ -220,9 +220,6 @@ def set_pipeline(feature_arrays, cv=None):
                     n_targets_batch=500, n_alphas_batch=5,
                     n_targets_batch_refit=100))
 
-    # Return selected alpha
-    print("Selected alpha:", kernel_ridge_cv.best_alphas_)
-
     pipeline = make_pipeline(
         scaler,
         delayer,

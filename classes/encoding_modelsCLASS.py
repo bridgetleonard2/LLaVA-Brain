@@ -3,6 +3,7 @@ import numpy as np
 from classes import visual_featuresCLASS
 from classes import language_featuresCLASS
 from sklearn import set_config
+from sklearn.preprocessing import StandardScaler
 from datasets import load_dataset  # type: ignore
 
 import utils
@@ -518,6 +519,7 @@ class EncodingModels:
             print("X_train shape", X_train.shape)
 
         _ = pipeline.fit(X_train, Y_train)
+        self.scaler = pipeline.named_steps['scaler']
 
         coef = pipeline[-1].get_primal_coef()
         coef = backend.to_numpy(coef)
@@ -550,6 +552,11 @@ class EncodingModels:
                 self.test_feature_arrays = [
                     np.dot(X, self.coef_caption_to_image.T) for X
                     in self.test_feature_arrays]
+
+        # Use self.scaler to transform x_test
+        self.test_feature_arrays = [self.scaler.transform(X) for X
+                                    in self.test_feature_arrays]
+
         self.predictions = []
         for i in range(len(self.test_feature_arrays)):
             X_test = self.test_feature_arrays[i]
@@ -582,6 +589,8 @@ class EncodingModels:
                   np.std(self.predictions[i]))
             print("test_fmri mean, sd", np.mean(self.test_fmri_arrays[i]),
                   np.std(self.test_fmri_arrays[i]))
+            print("train_fmri mean, sd", np.mean(self.train_fmri_arrays[i]),
+                  np.std(self.train_fmri_arrays[i]))
             test_correlations, test_r2 = utils.calc_corr_r2(
                 self.predictions[i], self.test_fmri_arrays[i])
             self.correlations.append(test_correlations)
