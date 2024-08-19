@@ -249,15 +249,30 @@ def safe_correlation(x, y):
         return numerator / denominator
 
 
-def calc_correlation(predicted_fMRI, real_fMRI):
+def safe_r_squared(y_true, y_pred):
+    """Calculate the R^2 coefficient safely."""
+    ss_res = np.nansum((y_true - y_pred)**2)
+    ss_tot = np.nansum((y_true - np.nanmean(y_true))**2)
+    r2 = 1 - ss_res / ss_tot if ss_tot != 0 else np.nan
+    return r2
+
+
+def calc_corr_r2(predicted_fMRI, real_fMRI):
     # Calculate correlations for each voxel
     correlation_coefficients = [safe_correlation(predicted_fMRI[:, i],
                                                  real_fMRI[:, i]) for i in
                                 range(predicted_fMRI.shape[1])]
     correlation_coefficients = np.array(correlation_coefficients)
 
+    # Calculate R^2 for each voxel
+    r_squared = [safe_r_squared(real_fMRI[:, i], predicted_fMRI[:, i]) for i in
+                 range(predicted_fMRI.shape[1])]
+    r_squared = np.array(r_squared)
+
     # Check for NaNs in the result
     nans_in_correlations = np.isnan(correlation_coefficients).any()
     print(f"NaNs in correlation coefficients: {nans_in_correlations}")
+    nans_in_r_squared = np.isnan(r_squared).any()
+    print(f"NaNs in R^2: {nans_in_r_squared}")
 
-    return correlation_coefficients
+    return correlation_coefficients, r_squared

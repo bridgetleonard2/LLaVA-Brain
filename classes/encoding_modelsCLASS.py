@@ -577,29 +577,20 @@ class EncodingModels:
 
         for i in range(len(self.predictions)):
             # Calculate the correlation
-            test_correlations = utils.calc_correlation(
+            test_correlations, test_r2 = utils.calc_corr_r2(
                 self.predictions[i], self.test_fmri_arrays[i])
             self.correlations.append(test_correlations)
+            self.r_squared.append(test_r2)
             print("Max correlation:", np.nanmax(test_correlations))
-
-            # Filter out NaNs from both predictions and actual data
-            valid_mask = ~np.isnan(self.test_fmri_arrays[i]) & ~np.isnan(
-                self.predictions[i])
-            valid_predictions = self.predictions[i][valid_mask]
-            valid_fmri = self.test_fmri_arrays[i][valid_mask]
-
-            # Calculate R-squared only for valid data
-            ss_res = np.nansum((valid_fmri - valid_predictions) ** 2)
-            ss_tot = np.nansum((valid_fmri - np.nanmean(valid_fmri)) ** 2)
-            r2 = 1 - (ss_res / ss_tot) if ss_tot != 0 else np.nan
-            self.r_squared.append(r2)
-            print("R-squared:", r2)
+            print("Max R-squared:", np.nanmax(test_r2))
 
         # Take the mean of the correlations
         self.mean_correlations = np.nanmean(
             np.stack((self.correlations)), axis=0)
         # Take the mean of the R-squared values
-        self.mean_r_squared = np.nanmean(self.r_squared)
+        self.mean_r_squared = np.nanmean(
+            np.stack((self.r_squared)), axis=0
+        )
         print("Mean R-squared:", self.mean_r_squared)
 
     def encoding_pipeline(self, alignment=False, cv=None):
