@@ -258,7 +258,7 @@ def safe_r_squared(y_true, y_pred):
     return r2
 
 
-def calc_corr_r2(predicted_fMRI, real_fMRI):
+def calc_corr(predicted_fMRI, real_fMRI):
     # Calculate correlations for each voxel
     correlation_coefficients = [safe_correlation(predicted_fMRI[:, i],
                                                  real_fMRI[:, i]) for i in
