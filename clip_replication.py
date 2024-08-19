@@ -74,7 +74,7 @@ feat_dir = f"results/features/clip_pipeline/{model_handler.layer_name}"
 encoding_model = encoding_modelsCLASS.EncodingModels(
         model_handler, train_stim_dir, train_fmri_dir,
         train_stim_type, test_stim_dir=test_stim_dir,
-        # test_fmri_dir=test_fmri_dir,
+        test_fmri_dir=test_fmri_dir,
         test_stim_type=test_stim_type,
         features_dir=feat_dir
         )
