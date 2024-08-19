@@ -74,8 +74,8 @@ print("Correlation shape:", corr_3d.shape)
 # # Flatten the data to 2D (example with max projection)
 # flat_prediction = np.max(prediction_3d, axis=2)
 
-vmin = 0
-vmax = .01
+vmin = -3
+vmax = .15
 vol = cortex.Volume(corr_3d, subject, transform_name, cmap="inferno", #"RdBu_r", #"hot",
                     vmin=vmin, vmax=vmax
                     )
