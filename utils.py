@@ -249,6 +249,11 @@ def safe_correlation(x, y):
         return numerator / denominator
 
 
+def normalize(data, mean, std):
+    """Normalize data to a specified mean and standard deviation."""
+    return (data - mean) / std
+
+
 def safe_r_squared(y_true, y_pred):
     """Calculate the R^2 coefficient safely."""
     # print("residual_check", y_true - y_pred)
@@ -266,8 +271,14 @@ def calc_corr_r2(predicted_fMRI, real_fMRI):
     correlation_coefficients = np.array(correlation_coefficients)
 
     # Calculate R^2 for each voxel
-    r_squared = [safe_r_squared(real_fMRI[:, i], predicted_fMRI[:, i]) for i in
-                 range(predicted_fMRI.shape[1])]
+    normalized_predictions = normalize(
+        predicted_fMRI, np.mean(predicted_fMRI), np.std(predicted_fMRI))
+    normalized_real_fmri = normalize(
+        real_fMRI, np.mean(real_fMRI), np.std(real_fMRI))
+
+    r_squared = [safe_r_squared(normalized_real_fmri[:, i],
+                                normalized_predictions[:, i]) for i in
+                 range(normalized_predictions.shape[1])]
     r_squared = np.array(r_squared)
 
     # Check for NaNs in the result
