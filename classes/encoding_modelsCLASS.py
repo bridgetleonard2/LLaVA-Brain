@@ -590,7 +590,7 @@ class EncodingModels:
                                           self.test_fmri_arrays[i])
             self.r_squared.append(test_r2)
             print("Max correlation:", np.nanmax(test_correlations))
-            print("Max R-squared:", np.nanmax(test_r2))
+            print("Max R-squared:", np.nanmax(test_r2.detach().cpu().numpy()))
 
         # Convert r2 to numpy array
         self.r_squared = [r2.detach().cpu().numpy() for r2 in self.r_squared]
