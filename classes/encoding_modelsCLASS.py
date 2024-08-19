@@ -577,6 +577,11 @@ class EncodingModels:
 
         for i in range(len(self.predictions)):
             # Calculate the correlation
+            print("check scale")
+            print("predictions mean, sd", np.mean(self.predictions[i]),
+                  np.std(self.predictions[i]))
+            print("test_fmri mean, sd", np.mean(self.test_fmri_arrays[i]),
+                  np.std(self.test_fmri_arrays[i]))
             test_correlations, test_r2 = utils.calc_corr_r2(
                 self.predictions[i], self.test_fmri_arrays[i])
             self.correlations.append(test_correlations)

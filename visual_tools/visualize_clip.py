@@ -15,18 +15,18 @@ filestore_path = cortex.database.default_filestore
 assert filestore_path == 'nsd_pycortex_db', f"cortex is using {filestore_path}"
 
 # Check if the transformation file exists
-subject = 'subj01'
+subject = 'subj05'
 transform_name = 'func1pt8_to_anat0pt8_autoFSbbr'
 transform_file = os.path.join('nsd_pycortex_db', subject, 'transforms',
                               transform_name, 'matrices.xfm')
 
 # good correlation mask
 corr_data = np.load(
-    'results/multi-modal_projector/vision_subj01_8515.npy'
+    'results/multi-modal_projector/subj05_8515_r2.npy'
     )
-brain_dims = (81, 104, 83)
+mask = np.load(f"visual_tools/cortical_mask_{subject}.npy")
+brain_dims = mask.shape
 corr_3d = np.zeros(brain_dims)
-mask = np.load("visual_tools/cortical_mask_subj01.npy")
 print("Mask shape:", mask.shape)
 print("Correlation shape:", corr_3d.shape)
 corr_3d[mask] = corr_data
@@ -74,15 +74,15 @@ print("Correlation shape:", corr_3d.shape)
 # # Flatten the data to 2D (example with max projection)
 # flat_prediction = np.max(prediction_3d, axis=2)
 
-vmin = -.5
-vmax = .5
-vol = cortex.Volume(corr_3d, subject, transform_name, cmap="RdBu_r", #"hot",
+vmin = 0
+vmax = .01
+vol = cortex.Volume(corr_3d, subject, transform_name, cmap="inferno", #"RdBu_r", #"hot",
                     vmin=vmin, vmax=vmax
                     )
 # cmap="inferno")
 
 # Create and display the flatmap
-output_name = 'vision_subj05_8515'
+output_name = 'vision_subj05_8515_r2'
 output_png = f'results/multi-modal_projector/{output_name}.png'
 
 fig = cortex.quickflat.make_png(output_png, vol, with_colorbar=True,
