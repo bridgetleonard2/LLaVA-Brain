@@ -573,6 +573,8 @@ class EncodingModels:
         self.correlations = []
         self.r_squared = []
 
+        print("predictions shape", np.array(self.predictions).shape)
+
         for i in range(len(self.predictions)):
             # Calculate the correlation
             test_correlations = utils.calc_correlation(
