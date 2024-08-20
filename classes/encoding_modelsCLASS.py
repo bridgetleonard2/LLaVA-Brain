@@ -597,11 +597,11 @@ class EncodingModels:
 
         for i in range(len(self.pipeline_predictions)):
             pipeline_r2 = utils.r2_score(self.test_fmri_arrays[i],
-                                     self.pipeline_predictions[i])
+                                         self.pipeline_predictions[i])
             self.pipeline_r_squared.append(pipeline_r2)
 
             coef_r2 = utils.r2_score(self.test_fmri_arrays[i],
-                                      self.coef_predictions[i])
+                                     self.coef_predictions[i])
             self.coef_r_squared.append(coef_r2)
 
             # # Calculate the correlation
@@ -611,7 +611,7 @@ class EncodingModels:
 
             pipeline_corr = [
                 pearsonr(self.test_fmri_arrays[i][:, j],
-                         self.predictions[i][:, j])[0] for j in range(
+                         self.pipeline_predictions[i][:, j])[0] for j in range(
                              self.test_fmri_arrays[i].shape[1])]
             self.pipeline_correlations.append(pipeline_corr)
 
@@ -693,7 +693,8 @@ class EncodingModels:
                 prediction_types = [self.pipeline_predictions,
                                     self.coef_predictions]
                 for i, pred_type in enumerate(prediction_types):
-                    print("before average shape [n_inputs, len_inputs, features]",
+                    print("before average shape [n_inputs,"
+                          " len_inputs, features]",
                           np.array(pred_type).shape)
                     self.output = np.nanmean(np.array(pred_type), axis=0)
                     # Since predictions are still over time,
@@ -709,8 +710,9 @@ class EncodingModels:
 
                     # save output
                     np.save(file_path, self.output)
-                
-                # print("before average shape [n_inputs, len_inputs, features]",
+
+                # print("before average shape [n_inputs, len_inputs,
+                # features]",
                 #       np.array(self.predictions).shape)
                 # self.output = np.nanmean(np.array(self.predictions), axis=0)
                 # # Since predictions are still over time,
