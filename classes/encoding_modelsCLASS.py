@@ -4,6 +4,7 @@ from classes import visual_featuresCLASS
 from classes import language_featuresCLASS
 from sklearn import set_config
 from datasets import load_dataset  # type: ignore
+from scipy.stats import pearsonr
 
 import utils
 
@@ -581,14 +582,20 @@ class EncodingModels:
         print("predictions shape", np.array(self.predictions).shape)
 
         for i in range(len(self.predictions)):
-            # Calculate the correlation
-            test_correlations = utils.calc_corr(
-                self.predictions[i], self.test_fmri_arrays[i])
-            self.correlations.append(test_correlations)
-
-            test_r2 = self.pipeline.score(self.test_feature_arrays[i],
-                                          self.test_fmri_arrays[i])
+            test_r2 = utils.r2_score(self.test_fmri_arrays[i],
+                                     self.predictions[i])
             self.r_squared.append(test_r2)
+
+            # # Calculate the correlation
+            # test_correlations = utils.calc_corr(
+            #     self.predictions[i], self.test_fmri_arrays[i])
+            # self.correlations.append(test_correlations)
+
+            test_correlations = [
+                pearsonr(self.test_fmri_arrays[i][:, j],
+                         self.predictions[i][:, j])[0] for j in range(
+                             self.test_fmri_arrays[i].shape[1])]
+
             print("Max correlation:", np.nanmax(test_correlations))
             print("Max R-squared:", np.nanmax(test_r2.detach().cpu().numpy()))
 

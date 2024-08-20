@@ -249,13 +249,14 @@ def safe_correlation(x, y):
         return numerator / denominator
 
 
-def safe_r_squared(y_true, y_pred):
-    """Calculate the R^2 coefficient safely."""
-    # print("residual_check", y_true - y_pred)
-    ss_res = np.nansum((y_true - y_pred)**2)
-    ss_tot = np.nansum((y_true - np.nanmean(y_true))**2)
-    r2 = 1 - ss_res / ss_tot if ss_tot != 0 else np.nan
-    return r2
+def r2_score(Real, Pred):
+    # print(Real.shape)
+    # print(Pred.shape)
+    SSres = np.mean((Real - Pred) ** 2, 0)
+    # print(SSres.shape)
+    SStot = np.var(Real, 0)
+    # print(SStot.shape)
+    return np.nan_to_num(1 - SSres / SStot)
 
 
 def calc_corr(predicted_fMRI, real_fMRI):
