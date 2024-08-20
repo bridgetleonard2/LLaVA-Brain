@@ -526,15 +526,15 @@ class EncodingModels:
 
         _ = self.pipeline.fit(X_train, Y_train)
 
-        coef = self.pipeline[-1].get_primal_coef()
-        coef = backend.to_numpy(coef)
-        print("(n_delays * n_features, n_voxels) =", coef.shape)
+        self.coef = self.pipeline[-1].get_primal_coef()
+        self.coef = backend.to_numpy(self.coef)
+        print("(n_delays * n_features, n_voxels) =", self.coef.shape)
         # Get encoding model from coefficients
         # Regularize coefficients
-        self.coef /= np.linalg.norm(coef, axis=0)[None]
+        self.coef /= np.linalg.norm(self.coef, axis=0)[None]
 
         delayer = self.pipeline.named_steps['delayer']
-        coef_per_delay = delayer.reshape_by_delays(coef, axis=0)
+        coef_per_delay = delayer.reshape_by_delays(self.coef, axis=0)
         print("(n_delays, n_features, n_voxels) =", coef_per_delay.shape)
 
         average_coef = np.mean(coef_per_delay, axis=0)
