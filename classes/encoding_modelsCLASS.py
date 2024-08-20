@@ -541,6 +541,8 @@ class EncodingModels:
         print("(n_features, n_voxels) =", average_coef.shape)
 
         self.encoding_model = average_coef
+        np.save('output/clip/model/encoding_model.npy',
+                self.encoding_model)
 
     def predict(self, alignment=False):
         """Predict fMRI data using the encoding model.
@@ -601,6 +603,7 @@ class EncodingModels:
                 pearsonr(self.test_fmri_arrays[i][:, j],
                          self.predictions[i][:, j])[0] for j in range(
                              self.test_fmri_arrays[i].shape[1])]
+            self.correlations.append(test_correlations)
 
             print("Max correlation:", np.nanmax(test_correlations))
             print("Max R-squared:", np.nanmax(test_r2))
