@@ -502,6 +502,12 @@ class EncodingModels:
         X_train = np.vstack(self.train_feature_arrays)
         Y_train = np.vstack(self.train_fmri_arrays)
 
+        # Save x_train and y_train
+        np.save('output/clip/model/x_train.npy',
+                X_train)
+        np.save('output/clip/model/y_train.npy',
+                Y_train)
+
         self.pipeline, backend = utils.set_pipeline(self.train_feature_arrays,
                                                     cv=cv)
 
@@ -597,10 +603,7 @@ class EncodingModels:
                              self.test_fmri_arrays[i].shape[1])]
 
             print("Max correlation:", np.nanmax(test_correlations))
-            print("Max R-squared:", np.nanmax(test_r2.detach().cpu().numpy()))
-
-        # Convert r2 to numpy array
-        self.r_squared = [r2.detach().cpu().numpy() for r2 in self.r_squared]
+            print("Max R-squared:", np.nanmax(test_r2))
 
         # Take the mean of the correlations
         self.mean_correlations = np.nanmean(
