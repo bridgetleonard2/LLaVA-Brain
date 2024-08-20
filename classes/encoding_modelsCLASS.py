@@ -574,9 +574,14 @@ class EncodingModels:
                 print("X_test shape", X_test.shape)
 
             Y_pred_pipeline = self.pipeline.predict(X_test)
-            Y_prep_coef = np.matmul(X_test, self.encoding_model)
+            print("Encoding model shape:", self.encoding_model.shape)
+            print("X_test shape:", X_test.shape)
+            X_test_scaled = (
+                self.pipeline.named_steps['standardscaler'].transform(X_test))
+            Y_pred_coef = np.matmul(X_test_scaled, self.encoding_model)
+            print("Y_pred shape:", Y_pred_coef.shape)
             self.pipeline_predictions.append(Y_pred_pipeline)
-            self.coef_predictions.append(Y_prep_coef)
+            self.coef_predictions.append(Y_pred_coef)
 
         # convert tensors to numpy arrays
         self.pipeline_predictions = [
