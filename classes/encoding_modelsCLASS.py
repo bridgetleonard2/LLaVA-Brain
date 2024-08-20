@@ -578,6 +578,9 @@ class EncodingModels:
             print("X_test shape:", X_test.shape)
             X_test_scaled = (
                 self.pipeline.named_steps['standardscaler'].transform(X_test))
+            X_test_delayed = self.pipeline.named_steps['delayer'].transform(
+                X_test_scaled)
+            print("X_test_delayed shape:", X_test_delayed.shape)
             Y_pred_coef = np.matmul(X_test_scaled, self.encoding_model)
             print("Y_pred shape:", Y_pred_coef.shape)
             self.pipeline_predictions.append(Y_pred_pipeline)
@@ -680,6 +683,18 @@ class EncodingModels:
                         file_name = 'mean_pipeline_correlations.npy'
                     else:
                         file_name = 'mean_coef_correlations.npy'
+                    file_path = os.path.join(directory, file_name)
+                    np.save(file_path, self.output)
+
+                r2_types = [self.mean_pipeline_r_squared,
+                            self.mean_coef_r_squared]
+
+                for i, r2_type in enumerate(r2_types):
+                    self.output = r2_type
+                    if i == 0:
+                        file_name = 'mean_pipeline_r_squared.npy'
+                    else:
+                        file_name = 'mean_coef_r_squared.npy'
                     file_path = os.path.join(directory, file_name)
                     np.save(file_path, self.output)
 
