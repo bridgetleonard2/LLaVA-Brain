@@ -254,10 +254,14 @@ def r2_score(Real, Pred, epsilon=1e-10):
     # print(Pred.shape)
     SSres = np.mean((Real - Pred) ** 2, 0)
     # print range of SSres
-    print(np.max(SSres))
-    print(np.min(SSres))
+    print('max', np.max(SSres))
+    print('min', np.min(SSres))
+    print('mean', np.mean(SSres))
     # print(SSres.shape)
     SStot = np.var(Real, 0)
+    print('max', np.max(SStot))
+    print('min', np.min(SStot))
+    print('mean', np.mean(SStot))
     # print(SStot.shape)
     return np.nan_to_num(1 - SSres / (SStot + epsilon))
 
