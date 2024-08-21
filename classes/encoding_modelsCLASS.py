@@ -491,7 +491,7 @@ class EncodingModels:
             # save alignment
             np.save(cap_to_im_path, self.coef_caption_to_image)
 
-    def build(self, cv=None):
+    def build(self, cv=None, delayer=True):
         """Build the encoding model.
 
         cv (int): Number of cross-validation folds. Default is None.
@@ -509,7 +509,8 @@ class EncodingModels:
                 Y_train)
 
         self.pipeline, backend = utils.set_pipeline(self.train_feature_arrays,
-                                                    cv=cv)
+                                                    cv=cv,
+                                                    delayer=delayer)
 
         set_config(display='diagram')  # requires scikit-learn 0.23
         self.pipeline
@@ -652,7 +653,7 @@ class EncodingModels:
             np.stack((self.coef_r_squared)), axis=0
         )
 
-    def encoding_pipeline(self, alignment=False, cv=None):
+    def encoding_pipeline(self, alignment=False, cv=None, delayer=True):
         """The encoding pipeline depends on the kind of data provided."""
         # Define the directory and file name
         directory = f'results/{self.model_handler.layer_name}'
@@ -665,7 +666,7 @@ class EncodingModels:
             # In this case we build the full training model
             # and use it to predict data from test_stim_files
             print("Building encoding model and running predictions")
-            self.build(cv=cv)
+            self.build(cv=cv, delayer=delayer)
 
             # check if alignment needed
             if self.train_stim_type != self.test_stim_type:

@@ -192,7 +192,7 @@ def remove_run(arrays, index_to_remove):
             if idx != index_to_remove]
 
 
-def set_pipeline(feature_arrays, cv=None):
+def set_pipeline(feature_arrays, cv=None, delayer=True):
     if cv is None:
         run_onsets = []
         current_index = 0
@@ -208,7 +208,10 @@ def set_pipeline(feature_arrays, cv=None):
 
     # Define the model
     scaler = StandardScaler(with_mean=True, with_std=False)
-    delayer = Delayer(delays=[1, 2, 3, 4])
+    if delayer:
+        delayer = Delayer(delays=[1, 2, 3, 4])
+    else:
+        delayer = None
     backend = set_backend("torch_cuda", on_error="warn")
     print(backend)
 
