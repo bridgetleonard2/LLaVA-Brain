@@ -8,6 +8,7 @@ from himalaya.backend import set_backend  # type: ignore
 from sklearn.base import BaseEstimator, TransformerMixin
 from himalaya.kernel_ridge import KernelRidgeCV  # type: ignore
 from sklearn.pipeline import make_pipeline
+import torch
 
 
 def resample_to_acq(feature_data, fmri_data_shape):
@@ -211,7 +212,12 @@ def set_pipeline(feature_arrays, cv=None):
     backend = set_backend("torch_cuda", on_error="warn")
     print(backend)
 
-    alphas = np.logspace(-8, 10, 100)
+    # alphas = np.logspace(-8, 10, 100)
+    X = np.vstack(feature_arrays)
+    tol = 8
+    alphas = torch.from_numpy(
+        np.logspace(-tol, 1 / 2 * np.log10(X.shape[1]) + tol, 100)
+    )
 
     kernel_ridge_cv = KernelRidgeCV(
                 alphas=alphas,
@@ -249,7 +255,7 @@ def safe_correlation(x, y):
         return numerator / denominator
 
 
-def r2_score(Real, Pred, epsilon=1e-10):
+def r2_score(Real, Pred):
     # print(Real.shape)
     # print(Pred.shape)
     SSres = np.mean((Real - Pred) ** 2, 0)
@@ -263,7 +269,7 @@ def r2_score(Real, Pred, epsilon=1e-10):
     print('min', np.min(SStot))
     print('mean', np.mean(SStot))
     # print(SStot.shape)
-    return np.nan_to_num(1 - SSres / (SStot + epsilon))
+    return np.nan_to_num(1 - SSres / SStot)
 
 
 def calc_corr(predicted_fMRI, real_fMRI):
