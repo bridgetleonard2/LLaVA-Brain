@@ -581,9 +581,11 @@ class EncodingModels:
             delayer = self.pipeline.named_steps['delayer']
             X_test_delayed = delayer.transform(
                 X_test_scaled)
+            print("X_test_delayed shape:", X_test_delayed.shape)
+            print("coef shape:", self.coef.shape)
             Y_pred_delay = np.matmul(X_test_delayed, self.coef)
             print("Y_pred_delay shape:", Y_pred_delay.shape)
-            Y_pred_per_delay = delayer.reshape_by_delays(Y_pred_delay, axis=0)
+            Y_pred_per_delay = delayer.reshape_by_delays(Y_pred_delay, axis=1)
             print("Y_pred_per_delay shape:", Y_pred_per_delay.shape)
             avg_Y_pred = np.mean(Y_pred_per_delay, axis=0)
             print("avg_Y_pred shape:", avg_Y_pred.shape)
