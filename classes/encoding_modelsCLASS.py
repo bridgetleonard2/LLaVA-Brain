@@ -8,7 +8,7 @@ from scipy.stats import pearsonr
 
 import utils
 
-flatten = False
+flatten = True
 
 
 class EncodingModels:
@@ -606,6 +606,10 @@ class EncodingModels:
         for i in range(len(self.pipeline_predictions)):
             pipeline_r2 = utils.r2_score(self.test_fmri_arrays[i],
                                          self.pipeline_predictions[i])
+            pipeline_score = self.pipeline.score(self.test_feature_arrays[i],
+                                                 self.test_fmri_arrays[i])
+            print("pipeline score:", pipeline_score)
+            print("max pipeline r2:", np.max(pipeline_score))
             self.pipeline_r_squared.append(pipeline_r2)
 
             coef_r2 = utils.r2_score(self.test_fmri_arrays[i],
