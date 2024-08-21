@@ -574,7 +574,7 @@ class EncodingModels:
                 print("X_test shape", X_test.shape)
 
             Y_pred_pipeline = self.pipeline.predict(X_test)
-            intercept = self.pipeline.named_steps['KernelRidgeCV'].intercept_
+            intercept = self.pipeline.named_steps['kernelridgecv'].intercept_
             Y_pred_pipeline = Y_pred_pipeline - intercept
             Y_pred_pipeline /= np.linalg.norm(Y_pred_pipeline, axis=0)[None]
             print("Encoding model shape:", self.encoding_model.shape)
