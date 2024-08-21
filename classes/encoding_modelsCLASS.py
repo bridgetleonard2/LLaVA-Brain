@@ -587,14 +587,14 @@ class EncodingModels:
             print("Y_pred_delay shape:", Y_pred_delay.shape)
             Y_pred_per_delay = delayer.reshape_by_delays(Y_pred_delay, axis=1)
             print("Y_pred_per_delay shape:", Y_pred_per_delay.shape)
-            avg_Y_pred = np.mean(Y_pred_per_delay, axis=0)
-            print("avg_Y_pred shape:", avg_Y_pred.shape)
+            # avg_Y_pred = np.mean(Y_pred_per_delay, axis=0)
+            # print("avg_Y_pred shape:", avg_Y_pred.shape)
 
             print("X_test_delayed shape:", X_test_delayed.shape)
             Y_pred_coef = np.matmul(X_test_scaled, self.encoding_model)
             print("Y_pred shape:", Y_pred_coef.shape)
             self.pipeline_predictions.append(Y_pred_pipeline)
-            self.coef_predictions.append(avg_Y_pred)  # Y_pred_coef)
+            self.coef_predictions.append(Y_pred_per_delay)  # Y_pred_coef)
 
         # convert tensors to numpy arrays
         self.pipeline_predictions = [
