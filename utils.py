@@ -6,7 +6,7 @@ from sklearn.utils.validation import (
     check_random_state, check_is_fitted, check_array)
 from himalaya.backend import set_backend  # type: ignore
 from sklearn.base import BaseEstimator, TransformerMixin
-from himalaya.ridge import RidgeCV  # type: ignore
+from himalaya.kernel_ridge import KernelRidgeCV  # type: ignore
 from sklearn.pipeline import make_pipeline
 import torch
 
@@ -219,7 +219,7 @@ def set_pipeline(feature_arrays, cv=None):
         np.logspace(-tol, 1 / 2 * np.log10(X.shape[1]) + tol, 100)
     )
 
-    ridge_cv = RidgeCV(
+    kernel_ridge_cv = KernelRidgeCV(
                 alphas=alphas,
                 cv=cv,
                 solver_params=dict(
@@ -229,7 +229,7 @@ def set_pipeline(feature_arrays, cv=None):
     pipeline = make_pipeline(
         scaler,
         delayer,
-        ridge_cv,
+        kernel_ridge_cv,
     )
 
     return pipeline, backend
