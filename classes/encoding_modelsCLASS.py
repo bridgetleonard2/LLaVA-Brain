@@ -574,6 +574,7 @@ class EncodingModels:
                 print("X_test shape", X_test.shape)
 
             Y_pred_pipeline = self.pipeline.predict(X_test)
+            Y_pred_pipeline /= np.linalg.norm(Y_pred_pipeline, axis=0)[None]
             print("Encoding model shape:", self.encoding_model.shape)
             print("X_test shape:", X_test.shape)
             X_test_scaled = (
