@@ -578,28 +578,10 @@ class EncodingModels:
             print("X_test shape:", X_test.shape)
             X_test_scaled = (
                 self.pipeline.named_steps['standardscaler'].transform(X_test))
-            delayer = self.pipeline.named_steps['delayer']
-            X_test_delayed = delayer.transform(
-                X_test_scaled)
-            print("X_test_delayed shape:", X_test_delayed.shape)
-            X_test_per_delay = delayer.reshape_by_delays(X_test_delayed, axis=1)
-            print("X_test_per_delay shape:", X_test_per_delay.shape)
-            avg_X_test = np.mean(X_test_per_delay, axis=0)
-            print("avg_X_test shape:", avg_X_test.shape)
-            Y_pred_delay = np.matmul(avg_X_test, self.encoding_model)
-            # print("coef shape:", self.coef.shape)
-            # Y_pred_delay = np.matmul(X_test_delayed, self.coef)
-            # print("Y_pred_delay shape:", Y_pred_delay.shape)
-            # Y_pred_per_delay = delayer.reshape_by_delays(Y_pred_delay, axis=1)
-            # print("Y_pred_per_delay shape:", Y_pred_per_delay.shape)
-            # avg_Y_pred = np.mean(Y_pred_per_delay, axis=0)
-            # print("avg_Y_pred shape:", avg_Y_pred.shape)
-
-            print("X_test_delayed shape:", X_test_delayed.shape)
             Y_pred_coef = np.matmul(X_test_scaled, self.encoding_model)
             print("Y_pred shape:", Y_pred_coef.shape)
             self.pipeline_predictions.append(Y_pred_pipeline)
-            self.coef_predictions.append(Y_pred_delay)  # Y_pred_coef)
+            self.coef_predictions.append(Y_pred_coef)
 
         # convert tensors to numpy arrays
         self.pipeline_predictions = [
