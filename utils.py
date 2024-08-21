@@ -228,12 +228,17 @@ def set_pipeline(feature_arrays, cv=None, delayer=True):
                 solver_params=dict(
                     n_targets_batch=500, n_alphas_batch=5,
                     n_targets_batch_refit=100))
-
-    pipeline = make_pipeline(
-        scaler,
-        delayer,
-        kernel_ridge_cv,
-    )
+    if delayer:
+        pipeline = make_pipeline(
+            scaler,
+            delayer,
+            kernel_ridge_cv,
+        )
+    else:
+        pipeline = make_pipeline(
+            scaler,
+            kernel_ridge_cv,
+        )
 
     return pipeline, backend
 
