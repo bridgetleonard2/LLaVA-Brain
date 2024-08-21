@@ -249,14 +249,17 @@ def safe_correlation(x, y):
         return numerator / denominator
 
 
-def r2_score(Real, Pred):
+def r2_score(Real, Pred, epsilon=1e-10):
     # print(Real.shape)
     # print(Pred.shape)
     SSres = np.mean((Real - Pred) ** 2, 0)
+    # print range of SSres
+    print(np.max(SSres))
+    print(np.min(SSres))
     # print(SSres.shape)
     SStot = np.var(Real, 0)
     # print(SStot.shape)
-    return np.nan_to_num(1 - SSres / SStot)
+    return np.nan_to_num(1 - SSres / (SStot + epsilon))
 
 
 def calc_corr(predicted_fMRI, real_fMRI):
