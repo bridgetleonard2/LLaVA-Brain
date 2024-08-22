@@ -245,7 +245,7 @@ class EncodingModels:
                     test_stim_features_resampled = test_stim_features
                 self.test_feature_arrays.append(test_stim_features_resampled)
 
-    def evaluate(self):
+    def evaluate(self, delayer=True):
         """Evaluate the encoding models using leave-one-run-out
         cross-validation.
 
@@ -285,16 +285,16 @@ class EncodingModels:
             # Regularize coefficients
             coef /= np.linalg.norm(coef, axis=0)[None]
 
-            # split the ridge coefficients per delays
-            delayer = pipeline.named_steps['delayer']
-            coef_per_delay = delayer.reshape_by_delays(coef, axis=0)
-            print("(n_delays, n_features, n_voxels) =", coef_per_delay.shape)
-            del coef
+            if delayer:
+                delayer = self.pipeline.named_steps['delayer']
+                coef_per_delay = delayer.reshape_by_delays(self.coef, axis=0)
+                print("(n_delays, n_features, n_voxels) =",
+                      coef_per_delay.shape)
 
-            # average over delays
-            average_coef = np.mean(coef_per_delay, axis=0)
-            print("(n_features, n_voxels) =", average_coef.shape)
-            del coef_per_delay
+                average_coef = np.mean(coef_per_delay, axis=0)
+                print("(n_features, n_voxels) =", average_coef.shape)
+            else:
+                average_coef = coef
 
             # check if any coef are zero or nan
             num_zeroes = np.count_nonzero(average_coef == 0)
@@ -534,14 +534,17 @@ class EncodingModels:
         # Regularize coefficients
         self.coef /= np.linalg.norm(self.coef, axis=0)[None]
 
-        delayer = self.pipeline.named_steps['delayer']
-        coef_per_delay = delayer.reshape_by_delays(self.coef, axis=0)
-        print("(n_delays, n_features, n_voxels) =", coef_per_delay.shape)
+        if delayer:
+            delayer = self.pipeline.named_steps['delayer']
+            coef_per_delay = delayer.reshape_by_delays(self.coef, axis=0)
+            print("(n_delays, n_features, n_voxels) =", coef_per_delay.shape)
 
-        average_coef = np.mean(coef_per_delay, axis=0)
-        print("(n_features, n_voxels) =", average_coef.shape)
+            average_coef = np.mean(coef_per_delay, axis=0)
+            print("(n_features, n_voxels) =", average_coef.shape)
 
-        self.encoding_model = average_coef
+            self.encoding_model = average_coef
+        else:
+            self.encoding_model = self.coef
         np.save('output/clip/model/encoding_model.npy',
                 self.encoding_model)
 
