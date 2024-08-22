@@ -514,9 +514,10 @@ class EncodingModels:
         np.save('output/clip/model/y_train.npy',
                 Y_train)
 
-        self.pipeline, backend = utils.set_pipeline(self.train_feature_arrays,
-                                                    cv=cv,
-                                                    delayer=delayer)
+        self.pipeline, self.backend = utils.set_pipeline(
+            self.train_feature_arrays,
+            cv=cv,
+            delayer=delayer)
 
         set_config(display='diagram')  # requires scikit-learn 0.23
         self.pipeline
@@ -534,7 +535,7 @@ class EncodingModels:
         _ = self.pipeline.fit(X_train, Y_train)
 
         self.coef = self.pipeline[-1].get_primal_coef()
-        self.coef = backend.to_numpy(self.coef)
+        self.coef = self.backend.to_numpy(self.coef)
         print("(n_delays * n_features, n_voxels) =", self.coef.shape)
         # Get encoding model from coefficients
         # Regularize coefficients
