@@ -22,7 +22,7 @@ transform_file = os.path.join('nsd_pycortex_db', subject, 'transforms',
 
 # good correlation mask
 corr_data = np.load(
-    'results/multi-modal_projector/subj05_8515_manual_r_squared.npy'
+    'results/multi-modal_projector/mean_pipeline_correlations.npy'
     )
 mask = np.load(f"visual_tools/cortical_mask_{subject}.npy")
 brain_dims = mask.shape
@@ -74,15 +74,15 @@ print("Correlation shape:", corr_3d.shape)
 # # Flatten the data to 2D (example with max projection)
 # flat_prediction = np.max(prediction_3d, axis=2)
 
-vmin = -.5
-vmax = .2
+vmin = -.1
+vmax = .9
 vol = cortex.Volume(corr_3d, subject, transform_name, cmap="inferno",  # "RdBu_r", "hot",
                     vmin=vmin, vmax=vmax
                     )
 # cmap="inferno")
 
 # Create and display the flatmap
-output_name = 'vision_subj05_8515_r2_new'
+output_name = 'vision_subj05_8515_corr'
 output_png = f'results/multi-modal_projector/{output_name}.png'
 
 fig = cortex.quickflat.make_png(output_png, vol, with_colorbar=True,

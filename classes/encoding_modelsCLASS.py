@@ -571,8 +571,7 @@ class EncodingModels:
                     np.dot(X, self.coef_caption_to_image.T) for X
                     in self.test_feature_arrays]
 
-        self.pipeline_predictions = []
-        self.coef_predictions = []
+        self.predictions = []
         for i in range(len(self.test_feature_arrays)):
             X_test = self.test_feature_arrays[i]
 
@@ -584,85 +583,50 @@ class EncodingModels:
                     X_test = np.mean(X_test, axis=1)
                 print("X_test shape", X_test.shape)
 
-            Y_pred_pipeline = self.pipeline.predict(X_test)
-            # intercept = self.pipeline.named_steps['kernelridgecv'].intercept_
-            # Y_pred_pipeline = Y_pred_pipeline - intercept
-            Y_pred_pipeline /= np.linalg.norm(Y_pred_pipeline, axis=0)[None]
+            Y_pred = self.pipeline.predict(X_test)
+            Y_pred /= np.linalg.norm(Y_pred, axis=0)[None]
             print("Encoding model shape:", self.encoding_model.shape)
             print("X_test shape:", X_test.shape)
-            X_test_scaled = (
-                self.pipeline.named_steps['standardscaler'].transform(X_test))
-            Y_pred_coef = np.matmul(X_test_scaled, self.encoding_model)
-            print("Y_pred shape:", Y_pred_coef.shape)
-            self.pipeline_predictions.append(Y_pred_pipeline)
-            self.coef_predictions.append(Y_pred_coef)
+            self.predictions.append(Y_pred)
 
         # convert tensors to numpy arrays
-        self.pipeline_predictions = [
-            pred.detach().cpu().numpy() for pred in self.pipeline_predictions]
+        self.predictions = [
+            pred.detach().cpu().numpy() for pred in self.predictions]
 
     def correlate(self):
         """Calculate the correlation and R-squared between predicted
         and actual fMRI data.
 
         Done when both test_stim_data and test_fmri_data are provided."""
-        self.pipeline_correlations = []
-        self.coef_correlations = []
-        self.pipeline_r_squared = []
-        self.coef_r_squared = []
+        self.correlations = []
+        self.r_squared = []
 
-        assert len(self.pipeline_predictions) == len(self.coef_predictions)
-        print("predictions shape", np.array(self.pipeline_predictions).shape)
+        print("predictions shape", np.array(self.predictions).shape)
 
-        for i in range(len(self.pipeline_predictions)):
-            # pipeline_r2 = utils.r2_score(self.test_fmri_arrays[i],
-            #                              self.pipeline_predictions[i])
-            pipeline_score = self.pipeline.score(self.test_feature_arrays[i],
-                                                 self.test_fmri_arrays[i])
-            pipeline_score = self.backend.to_numpy(
-                pipeline_score)
-            print("pipeline score:", pipeline_score)
-            print("max pipeline r2:", np.max(pipeline_score))
-            self.pipeline_r_squared.append(pipeline_score)
+        for i in range(len(self.predictions)):
+            r2_score = self.pipeline.score(self.test_feature_arrays[i],
+                                           self.test_fmri_arrays[i])
+            r2_score = self.backend.to_numpy(
+                r2_score)
+            print("pipeline score:", r2_score)
+            print("max pipeline r2:", np.max(r2_score))
+            self.r_squared.append(r2_score)
 
-            coef_r2 = utils.r2_score(self.test_fmri_arrays[i],
-                                     self.coef_predictions[i])
-            self.coef_r_squared.append(coef_r2)
-
-            # # Calculate the correlation
-            # test_correlations = utils.calc_corr(
-            #     self.predictions[i], self.test_fmri_arrays[i])
-            # self.correlations.append(test_correlations)
-
-            pipeline_corr = [
+            corr = [
                 pearsonr(self.test_fmri_arrays[i][:, j],
-                         self.pipeline_predictions[i][:, j])[0] for j in range(
+                         self.predictions[i][:, j])[0] for j in range(
                              self.test_fmri_arrays[i].shape[1])]
-            self.pipeline_correlations.append(pipeline_corr)
+            self.correlations.append(corr)
 
-            coef_corr = [
-                pearsonr(self.test_fmri_arrays[i][:, j],
-                         self.coef_predictions[i][:, j])[0] for j in range(
-                                self.test_fmri_arrays[i].shape[1])]
-            self.coef_correlations.append(coef_corr)
-
-            print("Max pipeline correlation:", np.nanmax(pipeline_corr))
-            print("Max pipeline R-squared:", np.nanmax(pipeline_score))
-            print("Max coef correlation:", np.nanmax(coef_corr))
-            print("Max coef R-squared:", np.nanmax(coef_r2))
+            print("Max correlation:", np.nanmax(corr))
+            print("Max R-squared:", np.nanmax(r2_score))
 
         # Take the mean of the correlations
-        self.mean_pipeline_corr = np.nanmean(
-            np.stack((self.pipeline_correlations)), axis=0)
+        self.mean_corr = np.nanmean(
+            np.stack((self.correlations)), axis=0)
         # Take the mean of the R-squared values
-        self.mean_pipeline_r_squared = np.nanmean(
-            np.stack((self.pipeline_r_squared)), axis=0
-        )
-        self.mean_coef_corr = np.nanmean(
-            np.stack((self.coef_correlations)), axis=0
-        )
-        self.mean_coef_r_squared = np.nanmean(
-            np.stack((self.coef_r_squared)), axis=0
+        self.r_squared = np.nanmean(
+            np.stack((self.r_squared)), axis=0
         )
 
     def encoding_pipeline(self, alignment=False, cv=None, delayer=True):
@@ -691,77 +655,33 @@ class EncodingModels:
                 print("Calculating correlations")
                 self.correlate()
 
-                # Output is the correlations
-                correlation_types = [self.mean_pipeline_corr,
-                                     self.mean_coef_corr]
-                for i, corr_type in enumerate(correlation_types):
-                    self.output = corr_type
-                    if i == 0:
-                        file_name = 'mean_pipeline_correlations.npy'
-                    else:
-                        file_name = 'mean_coef_correlations.npy'
-                    file_path = os.path.join(directory, file_name)
-                    np.save(file_path, self.output)
+                self.output = self.correlations
+                file_name = 'correlations.npy'
 
-                r2_types = [self.mean_pipeline_r_squared,
-                            self.mean_coef_r_squared]
+                file_path = os.path.join(directory, file_name)
+                np.save(file_path, self.output)
 
-                for i, r2_type in enumerate(r2_types):
-                    self.output = r2_type
-                    if i == 0:
-                        file_name = 'mean_pipeline_r_squared.npy'
-                    else:
-                        file_name = 'mean_coef_r_squared.npy'
-                    file_path = os.path.join(directory, file_name)
-                    np.save(file_path, self.output)
+                self.output = self.r_squared
+                file_name = 'r_squared.npy'
 
-                # # save output
-                # np.save(file_path, self.output)
-
-                # self.output = self.mean_r_squared
-
-                # file_name = 'pred_correlations.npy'
-                # file_path = os.path.join(directory, file_name)
-
-                # # save output
-                # np.save(file_path, self.output)
+                file_path = os.path.join(directory, file_name)
+                np.save(file_path, self.output)
             else:
                 # Output is mean predictions
-                prediction_types = [self.pipeline_predictions,
-                                    self.coef_predictions]
-                for i, pred_type in enumerate(prediction_types):
-                    print("before average shape [n_inputs,"
-                          " len_inputs, features]",
-                          np.array(pred_type).shape)
-                    self.output = np.nanmean(np.array(pred_type), axis=0)
-                    # Since predictions are still over time,
-                    # average over time (first dim)
-                    self.output = np.nanmean(self.output, axis=0)
-                    print("after average shape", self.output.shape)
+                print("before average shape [n_inputs,"
+                      " len_inputs, features]",
+                      np.array(self.predictions).shape)
+                self.output = np.nanmean(np.array(self.predictions), axis=0)
+                # Since predictions are still over time,
+                # average over time (first dim)
+                self.output = np.nanmean(self.output, axis=0)
+                print("after average shape", self.output.shape)
 
-                    if i == 0:
-                        file_name = 'mean_pipeline_predictions.npy'
-                    else:
-                        file_name = 'mean_coef_predictions.npy'
-                    file_path = os.path.join(directory, file_name)
+                file_name = 'predictions.npy'
+                file_path = os.path.join(directory, file_name)
 
-                    # save output
-                    np.save(file_path, self.output)
-
-                # print("before average shape [n_inputs, len_inputs,
-                # features]",
-                #       np.array(self.predictions).shape)
-                # self.output = np.nanmean(np.array(self.predictions), axis=0)
-                # # Since predictions are still over time,
-                # # average over time (first dim)
-                # self.output = np.nanmean(self.output, axis=0)
-                # print("after average shape", self.output.shape)
-
-                # file_name = 'predictions.npy'
-                # file_path = os.path.join(directory, file_name)
-
-                # # save output
-                # np.save(file_path, self.output)
+                # save output
+                np.save(file_path, self.output)
         else:
             # In this case we evaluate the model using leave-one-run-out
             # cross-validation
