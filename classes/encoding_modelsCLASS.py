@@ -655,7 +655,7 @@ class EncodingModels:
                 print("Calculating correlations")
                 self.correlate()
 
-                self.output = self.correlations
+                self.output = np.mean(self.correlations, axis=0)
                 file_name = 'correlations.npy'
 
                 file_path = os.path.join(directory, file_name)

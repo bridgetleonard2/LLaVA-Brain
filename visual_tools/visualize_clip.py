@@ -15,15 +15,16 @@ filestore_path = cortex.database.default_filestore
 assert filestore_path == 'nsd_pycortex_db', f"cortex is using {filestore_path}"
 
 # Check if the transformation file exists
-subject = 'subj05'
+subject = 'subj01'
 transform_name = 'func1pt8_to_anat0pt8_autoFSbbr'
 transform_file = os.path.join('nsd_pycortex_db', subject, 'transforms',
                               transform_name, 'matrices.xfm')
 
 # good correlation mask
 corr_data = np.load(
-    'results/multi-modal_projector/mean_pipeline_correlations.npy'
+    'results/multi-modal_projector/subj01_8515_r_squared.npy'
     )
+print("Correlation data shape:", corr_data.shape)
 mask = np.load(f"visual_tools/cortical_mask_{subject}.npy")
 brain_dims = mask.shape
 corr_3d = np.zeros(brain_dims)
@@ -82,7 +83,7 @@ vol = cortex.Volume(corr_3d, subject, transform_name, cmap="inferno",  # "RdBu_r
 # cmap="inferno")
 
 # Create and display the flatmap
-output_name = 'vision_subj05_8515_corr'
+output_name = 'vision_subj01_8515_r2.png'
 output_png = f'results/multi-modal_projector/{output_name}.png'
 
 fig = cortex.quickflat.make_png(output_png, vol, with_colorbar=True,
