@@ -583,7 +583,7 @@ class EncodingModels:
                     X_test = np.mean(X_test, axis=1)
                 print("X_test shape", X_test.shape)
 
-            Y_pred_pipeline = self.pipeline.predict(X_test, delayer=delayer)
+            Y_pred_pipeline = self.pipeline.predict(X_test)
             # intercept = self.pipeline.named_steps['kernelridgecv'].intercept_
             # Y_pred_pipeline = Y_pred_pipeline - intercept
             Y_pred_pipeline /= np.linalg.norm(Y_pred_pipeline, axis=0)[None]
