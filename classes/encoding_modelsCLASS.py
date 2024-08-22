@@ -261,7 +261,7 @@ class EncodingModels:
 
             print("X_train shape", X_train.shape)
 
-            pipeline, backend = utils.set_pipeline(new_feat_arrays)
+            pipeline, self.backend = utils.set_pipeline(new_feat_arrays)
 
             set_config(display='diagram')  # requires scikit-learn 0.23
             pipeline
@@ -279,7 +279,7 @@ class EncodingModels:
             _ = pipeline.fit(X_train, Y_train)
 
             coef = pipeline[-1].get_primal_coef()
-            coef = backend.to_numpy(coef)
+            coef = self.backend.to_numpy(coef)
             print("(n_delays * n_features, n_voxels) =", coef.shape)
 
             # Regularize coefficients
@@ -327,7 +327,7 @@ class EncodingModels:
 
             self.correlations.append(test_correlations)
 
-    def alignment(self):
+    def alignment(self, delayer=True):
         """Align the features and fMRI data.
         If train_stim_type != test_stim_type, alignment is needed.
 
@@ -433,17 +433,20 @@ class EncodingModels:
             coef_im_cap /= np.linalg.norm(coef_im_cap, axis=0)[None]
 
             # split the ridge coefficients per delays
-            delayer = pipeline.named_steps['delayer']
-            coef_im_cap_per_delay = delayer.reshape_by_delays(coef_im_cap,
-                                                              axis=0)
-            print("(n_delays, n_features, n_voxels) =",
-                  coef_im_cap_per_delay.shape)
-            del coef_im_cap
+            if delayer:
+                delayer = pipeline.named_steps['delayer']
+                coef_im_cap_per_delay = delayer.reshape_by_delays(coef_im_cap,
+                                                                  axis=0)
+                print("(n_delays, n_features, n_voxels) =",
+                      coef_im_cap_per_delay.shape)
+                del coef_im_cap
 
-            # average over delays
-            average_im_cap_coef = np.mean(coef_im_cap_per_delay, axis=0)
-            print("(n_features, n_voxels) =", average_im_cap_coef.shape)
-            del coef_im_cap_per_delay
+                # average over delays
+                average_im_cap_coef = np.mean(coef_im_cap_per_delay, axis=0)
+                print("(n_features, n_voxels) =", average_im_cap_coef.shape)
+                del coef_im_cap_per_delay
+            else:
+                average_im_cap_coef = coef_im_cap
 
             self.coef_image_to_caption = average_im_cap_coef
 
@@ -471,17 +474,20 @@ class EncodingModels:
             coef_cap_im /= np.linalg.norm(coef_cap_im, axis=0)[None]
 
             # split the ridge coefficients per delays
-            delayer = pipeline.named_steps['delayer']
-            coef_cap_im_per_delay = delayer.reshape_by_delays(coef_cap_im,
-                                                              axis=0)
-            print("(n_delays, n_features, n_voxels) =",
-                  coef_cap_im_per_delay.shape)
-            del coef_cap_im
+            if delayer:
+                delayer = pipeline.named_steps['delayer']
+                coef_cap_im_per_delay = delayer.reshape_by_delays(coef_cap_im,
+                                                                  axis=0)
+                print("(n_delays, n_features, n_voxels) =",
+                      coef_cap_im_per_delay.shape)
+                del coef_cap_im
 
-            # average over delays
-            average_cap_im_coef = np.mean(coef_cap_im_per_delay, axis=0)
-            print("(n_features, n_voxels) =", average_cap_im_coef.shape)
-            del coef_cap_im_per_delay
+                # average over delays
+                average_cap_im_coef = np.mean(coef_cap_im_per_delay, axis=0)
+                print("(n_features, n_voxels) =", average_cap_im_coef.shape)
+                del coef_cap_im_per_delay
+            else:
+                average_cap_im_coef = coef_cap_im
 
             self.coef_caption_to_image = average_cap_im_coef
 
@@ -548,13 +554,13 @@ class EncodingModels:
         np.save('output/clip/model/encoding_model.npy',
                 self.encoding_model)
 
-    def predict(self, alignment=False):
+    def predict(self, alignment=False, delayer=True):
         """Predict fMRI data using the encoding model.
 
         If test_stim_data is given but not test_fmri_data, the model
         will predict the fMRI data."""
         if alignment:
-            self.alignment()
+            self.alignment(delayer=delayer)
             if self.test_stim_type == "visual":
                 self.test_feature_arrays = [
                     np.dot(X, self.coef_image_to_caption.T) for X
@@ -577,7 +583,7 @@ class EncodingModels:
                     X_test = np.mean(X_test, axis=1)
                 print("X_test shape", X_test.shape)
 
-            Y_pred_pipeline = self.pipeline.predict(X_test)
+            Y_pred_pipeline = self.pipeline.predict(X_test, delayer=delayer)
             # intercept = self.pipeline.named_steps['kernelridgecv'].intercept_
             # Y_pred_pipeline = Y_pred_pipeline - intercept
             Y_pred_pipeline /= np.linalg.norm(Y_pred_pipeline, axis=0)[None]
@@ -608,13 +614,15 @@ class EncodingModels:
         print("predictions shape", np.array(self.pipeline_predictions).shape)
 
         for i in range(len(self.pipeline_predictions)):
-            pipeline_r2 = utils.r2_score(self.test_fmri_arrays[i],
-                                         self.pipeline_predictions[i])
+            # pipeline_r2 = utils.r2_score(self.test_fmri_arrays[i],
+            #                              self.pipeline_predictions[i])
             pipeline_score = self.pipeline.score(self.test_feature_arrays[i],
                                                  self.test_fmri_arrays[i])
+            pipeline_score = self.backend.to_numpy(
+                pipeline_score)
             print("pipeline score:", pipeline_score)
             print("max pipeline r2:", np.max(pipeline_score))
-            self.pipeline_r_squared.append(pipeline_r2)
+            self.pipeline_r_squared.append(pipeline_score)
 
             coef_r2 = utils.r2_score(self.test_fmri_arrays[i],
                                      self.coef_predictions[i])
@@ -638,7 +646,7 @@ class EncodingModels:
             self.coef_correlations.append(coef_corr)
 
             print("Max pipeline correlation:", np.nanmax(pipeline_corr))
-            print("Max pipeline R-squared:", np.nanmax(pipeline_r2))
+            print("Max pipeline R-squared:", np.nanmax(pipeline_score))
             print("Max coef correlation:", np.nanmax(coef_corr))
             print("Max coef R-squared:", np.nanmax(coef_r2))
 
@@ -675,7 +683,7 @@ class EncodingModels:
             if self.train_stim_type != self.test_stim_type:
                 alignment = True
 
-            self.predict(alignment=alignment)
+            self.predict(alignment=alignment, delayer=delayer)
             if self.test_fmri_dir:
                 # In this case we add on to the last step and
                 # calculate correlations between predicted and actual data
@@ -757,7 +765,7 @@ class EncodingModels:
             # In this case we evaluate the model using leave-one-run-out
             # cross-validation
             print("Evaluating encoding model")
-            self.evaluate()
+            self.evaluate(delayer=delayer)
 
             # Output is the average correlations
             self.output = np.nanmean(np.array(self.correlations), axis=0)
