@@ -8,7 +8,7 @@ from scipy.stats import pearsonr
 
 import utils
 
-flatten = True
+flatten = False
 
 
 class EncodingModels:
