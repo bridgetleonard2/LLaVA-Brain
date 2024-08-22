@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from PIL import Image
 
 # run get_pairs.sh first
-subj = 5
+subj = 1
 project_dir = '../clip2brain'
 project_output_dir = 'output'
 
