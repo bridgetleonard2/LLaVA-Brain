@@ -27,7 +27,7 @@ In recent years, large multimodal models (MMLs) have demonstrated remarkable cap
 - **Voxelwise Encoding**: Models that predict brain activity on a voxel-by-voxel basis.
 - **Multimodal Feature Extraction**: Utilizes features from state-of-the-art multimodal models.
 - **Comparative Analysis**: Compares the internal representations of MMLs to human brain activity.
-- **Interpretability**: Aims to provide insights into the interpretability of MMLs through the lens of cognitive neuroscience.
+- **Model Interpretability**: Aims to provide insights into the interpretability of MMLs through the lens of cognitive neuroscience.
 
 ## Data
 
@@ -42,23 +42,53 @@ Details on how the data is preprocessed, including any normalization, scaling, o
 
 ### Model Architecture
 
-- Description of the voxelwise encoding model used.
-- Details on how MML features are mapped to fMRI voxels.
+- Based on model selection, stimuli features were either extracted from the [BridgeTower Model](https://huggingface.co/docs/transformers/en/model_doc/bridgetower) or [LLaVA 1.6](https://github.com/haotian-liu/LLaVA). Features were extracted in a way that matched the presentation of stimuli to humans in the MRI scanner. For example, if humans watched videos at 30 frames per second and the MRI sampled their brain activity every second (TR = 1), features from the model were averaged in batches of 30 frames.
+- A multi-target ridge regression model (using the [Himalaya](https://gallantlab.org/himalaya/index.html) python package) was trained on the feature data to learn fMRI data. This data not only generates specific weights and biases for the relationship between all the training data and each individual target, but it also selects the best regularization parameter for each voxelwise calculation.
 
 ### Training
 
-- Overview of the training process, including loss functions, optimization algorithms, and any regularization techniques applied.
+- With the Himalaya model, [KernelRidgeCV](https://gallantlab.org/himalaya/models.html), we selected the alpha regularization paramater, alpha, using a 7-fold cross-validation scheme, for each voxel-based regression model over a specificed alpha range. With our most common pipeline, feature and fMRI data was divided into train and test sets using a 85/15 split.
 
 ### Evaluation
 
-- Methods for evaluating model performance, such as correlation between predicted and actual brain activity.
-- Explanation of how comparative analysis is conducted between human brain activity and MML internal representations.
+- Models were evaulated based on their Pearson correlation and R-squared score between predicted and real fMRI data.
+- Models were further evaluated in the scope of well-known phenomenon in cognitive neuroscience by comparing predicted activity to face stimuli and landscape/scene stimuli
 
 ## Results
 
-- Summary of the key findings from the voxelwise encoding models.
-- Visualizations comparing the predictions to actual brain activity.
-- Insights into the similarities and differences between human brain activity and MML representations.
+### Model Performance
+#### Voxel-wise Pearson correlation
+<div align="center">
+  <img src="results/multi-modal_projector/vision_subj01_8515_corr.png" alt="subj01" style="width:45%; float: left; margin-right: 2%;" />
+  <img src="results/multi-modal_projector/vision_subj05_8515_corr.png" alt="subj05" style="width:45%; float: left;" />
+  <br>
+  <i>Voxelwise correlations for two different subjects</i>
+</div>
+
+#### Voxel-wise R-squared Scores
+<div align="center">
+  <img src="results/multi-modal_projector/vision_subj01_8515_r2.png" alt="subj01" style="width:45%; float: left; margin-right: 2%;" />
+  <img src="results/multi-modal_projector/vision_subj05_8515_r2.png" alt="subj05" style="width:45%; float: left;" />
+  <br>
+  <i>Voxelwise R-squared values for two different subjects</i>
+</div>
+
+### Face vs Land prediction
+In the human brain, the fusiform face (FFA) is known to be sensitive to the presentation of faces while the extrastriate body area (EBA) is sensitive to human bodies and body parts. This effect is very easily captured with an fMRI signal so if our models are trained well to the data, they should predict FFA activity in response to images with faces, and since there are bodies in these images too, we will likely see EBA activation.
+<div align="center">
+  <img src="results/multi-modal_projector/vision_subj01_85_face.png" alt="subj01" style="width:45%; float: left; margin-right: 2%;" />
+  <img src="results/multi-modal_projector/vision_subj05_85_face.png" alt="subj05" style="width:45%; float: left;" />
+  <br>
+  <i>Voxelwise predictions for images containing human face</i>
+</div>
+
+In contrast, there are three main areas that respond to landscape images: the parahippocampal place area (PPA), retrosplenial complex (RSC), and occipital place area (OPA). These scene-selective areas should contain high predictive values when our model is predictivity activity from landscape image features.
+<div align="center">
+  <img src="results/multi-modal_projector/vision_subj01_85_land.png" alt="subj01" style="width:45%; float: left; margin-right: 2%;" />
+  <img src="results/multi-modal_projector/vision_subj05_85_land.png" alt="subj05" style="width:45%; float: left;" />
+  <br>
+  <i>Voxelwise predictions for images containing landscapes</i>
+</div>
 
 ## Conclusion
 
@@ -74,6 +104,12 @@ Instructions on how to install the necessary dependencies and set up the environ
 # Example command to set up the environment
 pip install -r requirements.txt
 ```
+
+## Usage
+
+## Contributing
+
+## License
 
 ## Acknowledgements
 All researchers who've contributed to the literature on voxelwise encoding models and particularly using them 
