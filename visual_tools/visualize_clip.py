@@ -39,21 +39,21 @@ print("Correlation shape:", corr_3d.shape)
 # corr_mask = np.where(corr_3d > 0.1, 1, 0)
 
 # # # # Create the Volume object
-# # prediction_data = np.load(
-# #     'results/multi-modal_projector/subj01_singleface.npy'
-# #     )
+# prediction_data = np.load(
+#     'results/multi-modal_projector/subj01_85_face_predictions.npy'
+#     )
 
-# face_data = np.load('results/multi-modal_projector/subj01_singleface.npy')
-# landscape_data = np.load('results/multi-modal_projector/subj01_singleland.npy')
+face_data = np.load('results/multi-modal_projector/subj01_85_face_predictions.npy')
+landscape_data = np.load('results/multi-modal_projector/subj01_85_land_predictions.npy')
 
 # # normalize data before taking difference
-# face_data = (face_data - np.mean(face_data)) / np.std(face_data)
-# landscape_data = (landscape_data - np.mean(landscape_data)) / np.std(landscape_data)
+face_data = (face_data - np.mean(face_data)) / np.std(face_data)
+landscape_data = (landscape_data - np.mean(landscape_data)) / np.std(landscape_data)
 
-# print("Max diff", np.max(face_data - landscape_data))
-# print("Min diff", np.min(face_data - landscape_data))
-# print("Mean diff", np.mean(face_data - landscape_data))
-# prediction_data = face_data - landscape_data
+print("Max diff", np.max(face_data - landscape_data))
+print("Min diff", np.min(face_data - landscape_data))
+print("Mean diff", np.mean(face_data - landscape_data))
+prediction_data = face_data - landscape_data
 
 # # take absolute value of prediction data
 # # prediction_data = np.abs(prediction_data)
@@ -61,13 +61,13 @@ print("Correlation shape:", corr_3d.shape)
 # # # only take positive values above 0.05
 # # prediction_data = np.where(prediction_data > 0.3, prediction_data, 0)
 
-# prediction_3d = np.zeros(brain_dims)
-# print("Mask shape:", mask.shape)
-# print("Prediction shape:", prediction_3d.shape)
-# prediction_3d[mask] = prediction_data
+prediction_3d = np.zeros(brain_dims)
+print("Mask shape:", mask.shape)
+print("Prediction shape:", prediction_3d.shape)
+prediction_3d[mask] = prediction_data
 
-# prediction_3d = np.transpose(prediction_3d, (2, 1, 0))
-# print("Prediction shape:", prediction_3d.shape)
+prediction_3d = np.transpose(prediction_3d, (2, 1, 0))
+print("Prediction shape:", prediction_3d.shape)
 
 # # filter with correlation mask
 # prediction_3d = prediction_3d * corr_mask
@@ -75,15 +75,15 @@ print("Correlation shape:", corr_3d.shape)
 # # Flatten the data to 2D (example with max projection)
 # flat_prediction = np.max(prediction_3d, axis=2)
 
-vmin = corr_3d.min()
-vmax = corr_3d.max()
-vol = cortex.Volume(corr_3d, subject, transform_name, cmap="inferno",  # "RdBu_r", "hot",
+vmin = prediction_3d.min()
+vmax = prediction_3d.max()
+vol = cortex.Volume(prediction_3d, subject, transform_name, cmap="inferno",  # "RdBu_r", "hot",
                     vmin=vmin, vmax=vmax
                     )
 # cmap="inferno")
 
 # Create and display the flatmap
-output_name = 'vision_subj01_8515_r2.png'
+output_name = 'vision_subj01_85_faceminusland'
 output_png = f'results/multi-modal_projector/{output_name}.png'
 
 fig = cortex.quickflat.make_png(output_png, vol, with_colorbar=True,
