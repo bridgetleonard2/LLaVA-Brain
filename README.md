@@ -91,10 +91,10 @@ In contrast, there are three main areas that respond to landscape images: the pa
 </div>
 
 ## Conclusion
+fMRI research has been around for decades, leaving a surplus of data regarding all kinds of cognitive phenomena detailing cognition and perception, learning and memory, and more specific occurences of brain function and dysfunction.
+Using these data we can better understand what information features in AI models represent on a human-level. By comparing and contrasting these representations, we can better guage the best use and development projectory of large language and multimodal models.
+Applying cognitive neuroscience perspectives is crucial for model interpretability. To understand new forms of intelligence we must compare it to the most well known and researched intelligence, the human brain.
 
-- Discussion of the implications of the results for model interpretability and cognitive neuroscience.
-- Potential applications of the findings.
-- Future work and directions for further research.
 
 ## Installation
 
