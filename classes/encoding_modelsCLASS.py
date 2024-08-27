@@ -133,7 +133,7 @@ class EncodingModels:
                 print('fmri_data_clean shape:', fmri_data_clean.shape)
                 self.test_fmri_arrays.append(fmri_data_clean)
 
-    def load_features(self, n=30):
+    def load_features(self, n=30, batch_size=50):
         """Load the features.
 
         If features don't exist, they are created and saved.
@@ -153,7 +153,7 @@ class EncodingModels:
                     visual_features = visual_featuresCLASS.VisualFeatures(
                         stim_path, self.model_handler)
                     visual_features.load_image()
-                    visual_features.get_features(n=n)
+                    visual_features.get_features(n=n, batch_size=batch_size)
                     train_stim_features = visual_features.visualFeatures
                 elif self.train_stim_type == "language":
                     language_features = (
@@ -203,7 +203,8 @@ class EncodingModels:
                         visual_features = visual_featuresCLASS.VisualFeatures(
                             stim_path, self.model_handler)
                         visual_features.load_image()
-                        visual_features.get_features(n=n)
+                        visual_features.get_features(n=n,
+                                                     batch_size=batch_size)
                         test_stim_features = visual_features.visualFeatures
                     elif self.test_stim_type == "language":
                         language_features = (
