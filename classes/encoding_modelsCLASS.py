@@ -508,12 +508,6 @@ class EncodingModels:
         X_train = np.vstack(self.train_feature_arrays)
         Y_train = np.vstack(self.train_fmri_arrays)
 
-        # Save x_train and y_train
-        np.save('output/clip/model/x_train.npy',
-                X_train)
-        np.save('output/clip/model/y_train.npy',
-                Y_train)
-
         self.pipeline, self.backend = utils.set_pipeline(
             self.train_feature_arrays,
             cv=cv,
@@ -552,8 +546,6 @@ class EncodingModels:
             self.encoding_model = average_coef
         else:
             self.encoding_model = self.coef
-        np.save('output/clip/model/encoding_model.npy',
-                self.encoding_model)
 
     def predict(self, alignment=False, delayer=True):
         """Predict fMRI data using the encoding model.
