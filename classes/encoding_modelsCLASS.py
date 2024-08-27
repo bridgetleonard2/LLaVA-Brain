@@ -335,6 +335,7 @@ class EncodingModels:
         This accounts for the linear transformation between the
         two types of data. This allows us to project one type of
         data into the other's space."""
+        print("Starting alignment")
         # try loading alignment
         im_to_cap_filename = (f"{self.model_handler.layer_name}"
                               "_im_to_cap_alignment.npy")

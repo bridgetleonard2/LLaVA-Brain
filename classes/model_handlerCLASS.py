@@ -15,7 +15,8 @@ class ModelHandler:
         self.model_name = model_name
         if model_name == 'llava':
             self.model = LlavaNextForConditionalGeneration
-            self.model_id = "llava-hf/llava-v1.6-34b-hf"
+            self.model_id = "llava-hf/llava-v1.6-mistral-7b-hf"
+            # "llava-hf/llava-v1.6-34b-hf"
             # "llava-hf/llava-1.5-7b-hf"
             self.processor = LlavaNextProcessor
             self.q = BitsAndBytesConfig(

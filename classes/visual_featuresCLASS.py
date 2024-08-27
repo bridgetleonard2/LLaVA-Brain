@@ -65,10 +65,13 @@ class VisualFeatures:
         if self.ModelHandler.model_name == 'llava':
             # Follow prompt format:
             formatted_prompt = (
-                "<|im_start|>system\nUnderstand this image."
-                "<|im_end|><|im_start|>user"
-                f"\n<image>\n{prompt}<|im_end|><|im_start|>assistant\n"
+                f"[INST] <image>\n{prompt}[/INST]"
             )
+            # formatted_prompt = (
+            #     "<|im_start|>system\nUnderstand this image."
+            #     "<|im_end|><|im_start|>user"
+            #     f"\n<image>\n{prompt}<|im_end|><|im_start|>assistant\n"
+            # )  # llava1.6-34b-hf
         else:
             formatted_prompt = prompt
         print("self.stim_data.shape[0]:", self.stim_data.shape)
