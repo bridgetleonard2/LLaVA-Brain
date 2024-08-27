@@ -65,8 +65,9 @@ class VisualFeatures:
         if self.ModelHandler.model_name == 'llava':
             # Follow prompt format:
             formatted_prompt = (
-                f"system\nUnderstand this image.\nuser\n<image>\n"
-                f"{prompt}\nassistant\n"
+                "<|im_start|>system\nUnderstand this image."
+                "<|im_end|><|im_start|>user"
+                f"\n<image>\n{prompt}<|im_end|><|im_start|>assistant\n"
             )
         else:
             formatted_prompt = prompt

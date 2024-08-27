@@ -3,18 +3,21 @@ import torch   # type: ignore
 
 # models
 from transformers import BridgeTowerModel, BridgeTowerProcessor  # type: ignore
-from transformers import AutoProcessor  # type: ignore
-from transformers import LlavaForConditionalGeneration  # type: ignore
-from transformers import BitsAndBytesConfig  # type: ignore
+from transformers import (  # type: ignore
+    LlavaNextProcessor,
+    LlavaNextForConditionalGeneration,
+    BitsAndBytesConfig,
+)
 
 
 class ModelHandler:
     def __init__(self, model_name):
         self.model_name = model_name
         if model_name == 'llava':
-            self.model = LlavaForConditionalGeneration
-            self.model_id = "llava-hf/llava-1.5-7b-hf"
-            self.processor = AutoProcessor
+            self.model = LlavaNextForConditionalGeneration
+            self.model_id = "llava-hf/llava-v1.6-34b-hf"
+            # "llava-hf/llava-1.5-7b-hf"
+            self.processor = LlavaNextProcessor
             self.q = BitsAndBytesConfig(
                                         load_in_4bit=True,
                                         bnb_4bit_quant_type="nf4",

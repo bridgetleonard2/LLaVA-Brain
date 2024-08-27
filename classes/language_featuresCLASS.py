@@ -106,8 +106,9 @@ class LanguageFeatures:
         if self.ModelHandler.model_name == 'llava':
             # Follow prompt format:
             formatted_prompt = [
-                (f"system\nUnderstand this story.\nuser\n<image>"
-                 f"\n{prompt}\nassistant\n")
+                ("<|im_start|>system\nUnderstand this story."
+                 "<|im_end|><|im_start|>user"
+                 f"\n<image>\n{prompt}<|im_end|><|im_start|>assistant\n")
                 for prompt in words_with_context
             ]
         else:

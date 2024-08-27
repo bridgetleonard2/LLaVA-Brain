@@ -85,4 +85,5 @@ encoding_model.load_features(n=1)
 
 # don't need to create cv based on movie start/end
 # set cv manually to match clip paper
+# delays are already accounted for with preprocessing of fmri data
 encoding_model.encoding_pipeline(cv=7, delayer=False)
