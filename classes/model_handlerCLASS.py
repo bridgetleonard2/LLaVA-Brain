@@ -103,6 +103,7 @@ class ModelHandler:
             def hook(model, input, output):
                 # print("Batch output:", np.array(output.detach().cpu()).shape)
                 output = output.detach().cpu()
+                print("Output shape:", output.shape)
                 self.features[name].extend(output)  # detached_outputs
             return hook
 
