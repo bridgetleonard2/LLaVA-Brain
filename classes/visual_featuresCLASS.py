@@ -103,6 +103,8 @@ class VisualFeatures:
             # Perform model inference on the batch
             with torch.no_grad():
                 _ = self.ModelHandler.model.generate(**model_inputs)
+            print("Batch number ", batch_idx, ", Number of tensors so far: ",
+                  len(self.ModelHandler.features['layer']))
 
         all_tensors = self.ModelHandler.features['layer']
 
