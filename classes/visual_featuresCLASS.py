@@ -91,6 +91,8 @@ class VisualFeatures:
         for batch_idx in tqdm(range(num_batches), desc="Processing batches"):
             batch_start = batch_idx * batch_size
             batch_end = min(batch_start + batch_size, self.stim_data.shape[0])
+            print("Batch start:", batch_start)
+            print("Batch end:", batch_end)
 
             batch_images = self.stim_data[batch_start:batch_end]
             batch_text = text[batch_start:batch_end]
