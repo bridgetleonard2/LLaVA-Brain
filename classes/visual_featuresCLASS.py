@@ -60,6 +60,7 @@ class VisualFeatures:
         print(f"Loaded {self.stim_data.shape} image data")
 
     def get_features(self, batch_size=50, n=30):
+        print("Batch size:", batch_size)
         prompt = ""
         # prepare images for model
         if self.ModelHandler.model_name == 'llava':
