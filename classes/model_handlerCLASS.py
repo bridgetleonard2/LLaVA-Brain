@@ -107,6 +107,7 @@ class ModelHandler:
                 # if using llava1.6, the first dim of output needs to be
                 # averaged such that each 5 indices are averaged
                 if self.model_id == 'llava-hf/llava-v1.6-mistral-7b-hf':
+                    print("Model requires batch size 10")
                     # Step 1: Reshape the tensor to group every 5 indices
                     output = output.view(10, 5, 576, 4096)
 

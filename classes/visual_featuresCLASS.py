@@ -64,15 +64,23 @@ class VisualFeatures:
         prompt = ""
         # prepare images for model
         if self.ModelHandler.model_name == 'llava':
+            mod_id = self.ModelHandler.model_id
             # Follow prompt format:
-            formatted_prompt = (
-                f"[INST] <image>\n{prompt}[/INST]"
-            )
-            # formatted_prompt = (
-            #     "<|im_start|>system\nUnderstand this image."
-            #     "<|im_end|><|im_start|>user"
-            #     f"\n<image>\n{prompt}<|im_end|><|im_start|>assistant\n"
-            # )  # llava1.6-34b-hf
+            if mod_id == 'llava-hf/llava-v1.6-mistral-7b-hf':
+                formatted_prompt = (
+                    f"[INST] <image>\n{prompt}[/INST]"
+                )
+            elif mod_id == "llava-hf/llava-1.5-7b-hf":
+                formatted_prompt = (
+                    f"system\nUnderstand this image.\nuser\n<image>\n"
+                    f"{prompt}\nassistant\n"
+                )
+            elif mod_id == "llava-hf/llava-v1.6-34b-hf":
+                formatted_prompt = (
+                    "<|im_start|>system\nUnderstand this image."
+                    "<|im_end|><|im_start|>user"
+                    f"\n<image>\n{prompt}<|im_end|><|im_start|>assistant\n"
+                )  # llava1.6-34b-hf
         else:
             formatted_prompt = prompt
         print("self.stim_data.shape[0]:", self.stim_data.shape)

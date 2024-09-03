@@ -81,7 +81,7 @@ encoding_model = encoding_modelsCLASS.EncodingModels(
 
 encoding_model.load_fmri()
 # loading each image individually so n = 1 (no grouping/average)
-encoding_model.load_features(n=1, batch_size=1)
+encoding_model.load_features(n=1, batch_size=10)
 
 # don't need to create cv based on movie start/end
 # set cv manually to match clip paper
