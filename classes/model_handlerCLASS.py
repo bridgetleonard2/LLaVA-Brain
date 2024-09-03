@@ -104,6 +104,10 @@ class ModelHandler:
                 # print("Batch output:", np.array(output.detach().cpu()).shape)
                 output = output.detach().cpu()
                 print("Output shape:", output.shape)
+                # if output is greater than 2D, flatten first two dimensions
+                if len(output.shape) > 2:
+                    output = output.view(output.size(0), -1)
+                print("Output new shape:", output.shape)
                 self.features[name].extend(output)  # detached_outputs
             return hook
 
