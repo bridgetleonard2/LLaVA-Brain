@@ -104,9 +104,15 @@ class ModelHandler:
                 # print("Batch output:", np.array(output.detach().cpu()).shape)
                 output = output.detach().cpu()
                 print("Output shape:", output.shape)
-                # if output.shape[0] > 1, reduce to 1
-                if output.shape[0] > 1:
-                    output = output.mean(dim=0, keepdim=True)
+                # if using llava1.6, the first dim of output needs to be
+                # averaged such that each 5 indices are averaged
+                if self.model_id == 'llava-hf/llava-v1.6-mistral-7b-hf':
+                    # Step 1: Reshape the tensor to group every 5 indices
+                    output = output.view(10, 5, 576, 4096)
+
+                    # Step 2: Compute the mean along the dimension that was
+                    # created by grouping (i.e., dimension 1)
+                    output = output.mean(dim=1)
                 print("Output new shape:", output.shape)
                 self.features[name].extend(output)  # detached_outputs
             return hook
