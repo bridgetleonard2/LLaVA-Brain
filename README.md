@@ -59,16 +59,16 @@ Details on how the data is preprocessed, including any normalization, scaling, o
 ### Model Performance
 #### Voxel-wise Pearson correlation
 <div align="center">
-  <img src="results/multi-modal_projector/vision_subj01_8515_corr.png" alt="subj01" style="width:45%; float: left; margin-right: 2%;" />
-  <img src="results/multi-modal_projector/vision_subj05_8515_corr.png" alt="subj05" style="width:45%; float: left;" />
+  <img src="results/multi-modal_projector/llava1.5-7b/vision_subj01_8515_corr.png" alt="subj01" style="width:45%; float: left; margin-right: 2%;" />
+  <img src="results/multi-modal_projector/llava1.5-7b/vision_subj05_8515_corr.png" alt="subj05" style="width:45%; float: left;" />
   <br>
   <i>Voxelwise correlations for two different subjects</i>
 </div>
 
 #### Voxel-wise R-squared Scores
 <div align="center">
-  <img src="results/multi-modal_projector/vision_subj01_8515_r2.png" alt="subj01" style="width:45%; float: left; margin-right: 2%;" />
-  <img src="results/multi-modal_projector/vision_subj05_8515_r2.png" alt="subj05" style="width:45%; float: left;" />
+  <img src="results/multi-modal_projector/llava1.5-7b/vision_subj01_8515_r2.png" alt="subj01" style="width:45%; float: left; margin-right: 2%;" />
+  <img src="results/multi-modal_projector/llava1.5-7b/vision_subj05_8515_r2.png" alt="subj05" style="width:45%; float: left;" />
   <br>
   <i>Voxelwise R-squared values for two different subjects</i>
 </div>
@@ -76,16 +76,16 @@ Details on how the data is preprocessed, including any normalization, scaling, o
 ### Face vs Land prediction
 In the human brain, the fusiform face (FFA) is known to be sensitive to the presentation of faces while the extrastriate body area (EBA) is sensitive to human bodies and body parts. This effect is very easily captured with an fMRI signal so if our models are trained well to the data, they should predict FFA activity in response to images with faces, and since there are bodies in these images too, we will likely see EBA activation.
 <div align="center">
-  <img src="results/multi-modal_projector/vision_subj01_85_face.png" alt="subj01" style="width:45%; float: left; margin-right: 2%;" />
-  <img src="results/multi-modal_projector/vision_subj05_85_face.png" alt="subj05" style="width:45%; float: left;" />
+  <img src="results/multi-modal_projector/llava1.5-7b/vision_subj01_85_face.png" alt="subj01" style="width:45%; float: left; margin-right: 2%;" />
+  <img src="results/multi-modal_projector/llava1.5-7b/vision_subj05_85_face.png" alt="subj05" style="width:45%; float: left;" />
   <br>
   <i>Voxelwise predictions for images containing human face</i>
 </div>
 
 In contrast, there are three main areas that respond to landscape images: the parahippocampal place area (PPA), retrosplenial complex (RSC), and occipital place area (OPA). These scene-selective areas should contain high predictive values when our model is predictivity activity from landscape image features.
 <div align="center">
-  <img src="results/multi-modal_projector/vision_subj01_85_land.png" alt="subj01" style="width:45%; float: left; margin-right: 2%;" />
-  <img src="results/multi-modal_projector/vision_subj05_85_land.png" alt="subj05" style="width:45%; float: left;" />
+  <img src="results/multi-modal_projector/llava1.5-7b/vision_subj01_85_land.png" alt="subj01" style="width:45%; float: left; margin-right: 2%;" />
+  <img src="results/multi-modal_projector/llava1.5-7b/vision_subj05_85_land.png" alt="subj05" style="width:45%; float: left;" />
   <br>
   <i>Voxelwise predictions for images containing landscapes</i>
 </div>
