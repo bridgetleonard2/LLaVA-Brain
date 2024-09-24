@@ -34,9 +34,12 @@ In recent years, large multimodal models (MMLs) have demonstrated remarkable cap
 - **fMRI Data**: Functional Magnetic Resonance Imaging data representing brain activity.
 - **MML Features**: Features extracted from large multimodal models, such as text, image, or combined modalities.
 
-### Data Preprocessing
+### Data Sources
+3 potential fMRI data sources can be used:
+1) [Natural Scenes Dataset](https://naturalscenesdataset.org/) A whole-brain, high-resolution fMRI dataset of healthy adult subjects viewing thousands of color natural scenes. To build a **visual** encoding model
+2) [Shortclips](https://doi.gin.g-node.org/10.12751/g-node.vy1zjd/) fMRI dataset of human subjects viewing a set of natural short clips. To build a **visual** encoding model
+3) [Textgrids](https://www.nature.com/articles/s41597-023-02437-z) fMRI dataset of human subjects listening to a set of natural, narrative stories. To build a **language** encoding model
 
-Details on how the data is preprocessed, including any normalization, scaling, or other transformations applied to the fMRI data and MML features.
 
 ## Methodology
 
