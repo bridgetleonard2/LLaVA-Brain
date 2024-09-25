@@ -110,9 +110,10 @@ pip install -r requirements.txt
 
 ## Usage
 
-## Contributing
+The main script `llava_nsd_pipeline.py` contains all the parameters and calls to run the model features to fMRI prediction pipeline. This code was run using GPU acceleration on an HPC cluster. `cuda_crossmodal_1.1.def` contains all the requirements needed to set up an Apptainer container for running the pipeline using this script.
 
 ## License
+GNU General Public License
 
 ## Acknowledgements
 All researchers who've contributed to the literature on voxelwise encoding models and particularly using them 
