@@ -81,6 +81,7 @@ encoding_model = encoding_modelsCLASS.EncodingModels(
 
 encoding_model.load_fmri()
 # loading each image individually so n = 1 (no grouping/average)
+# batch size is 10 for llava 1.6
 encoding_model.load_features(n=1, batch_size=10)
 
 # don't need to create cv based on movie start/end
