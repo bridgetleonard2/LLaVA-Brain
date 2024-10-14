@@ -21,7 +21,7 @@ class ModelHandler:
             # "llava-hf/llava-v1.6-mistral-7b-hf"
             # "llava-hf/llava-1.5-7b-hf"
 
-            if self.model_id == "llava-hf/llava-v1.6-mistral-7b-hf":
+            if self.model_id == "llava-hf/llava-1.5-7b-hf":
                 self.model = LlavaForConditionalGeneration
                 self.processor = AutoProcessor
             else:
