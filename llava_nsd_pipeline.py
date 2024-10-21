@@ -55,6 +55,10 @@ model_name = 'llava'
 model_handler = model_handlerCLASS.ModelHandler(model_name)
 model_handler.load_model()
 
+# Add processor parameters
+model_handler.processor.patch_size = 14
+model_handler.processor.vision_feature_select_strategy = "default"
+
 data_dir = 'data/clip'
 
 train_stim_dir = f"{data_dir}/train_stim"

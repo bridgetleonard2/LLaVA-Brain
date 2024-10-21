@@ -105,6 +105,9 @@ class VisualFeatures:
             batch_images = self.stim_data[batch_start:batch_end]
             batch_text = text[batch_start:batch_end]
 
+            # Make images list of np
+            batch_images = [img for img in batch_images]
+
             model_inputs = self.ModelHandler.processor(images=batch_images,
                                                        text=batch_text,
                                                        return_tensors='pt')
